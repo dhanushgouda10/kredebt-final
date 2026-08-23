@@ -29,18 +29,30 @@ public class StudentService {
     private final CurrentUserService currentUserService;
     private final AuditLogService auditLogService;
     private final WalletService walletService;
+    private final EmailService emailService;
 
     public StudentService(
             StudentRepository studentRepository,
             PasswordEncoder passwordEncoder,
             CurrentUserService currentUserService,
             AuditLogService auditLogService,
-            WalletService walletService) {
+            WalletService walletService,
+            EmailService emailService) {
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
         this.currentUserService = currentUserService;
         this.auditLogService = auditLogService;
         this.walletService = walletService;
+        this.emailService = emailService;
+    }
+
+    /**
+     * Emails are stored lowercase and trimmed so the unique constraint actually
+     * bites — without this, Student@mvjce.edu.in and student@mvjce.edu.in would be
+     * two distinct rows for the same mailbox.
+     */
+    static String normalizeEmail(String email) {
+        return email == null ? null : email.trim().toLowerCase(java.util.Locale.ROOT);
     }
 
     public StudentResponse getOwnProfile() {
@@ -86,7 +98,9 @@ public class StudentService {
     }
 
     public StudentResponse adminCreateStudent(RegisterRequest request) {
-        if (studentRepository.existsByEmail(request.getEmail())) {
+        String email = normalizeEmail(request.getEmail());
+
+        if (studentRepository.existsByEmail(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
         if (studentRepository.existsByUsn(request.getUsn())) {
@@ -97,7 +111,7 @@ public class StudentService {
         Student student = new Student();
         student.setFullName(request.getFullName());
         student.setUsn(request.getUsn());
-        student.setEmail(request.getEmail());
+        student.setEmail(email);
         student.setPhone(request.getPhone());
         student.setDepartment(request.getDepartment());
         student.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -120,7 +134,12 @@ public class StudentService {
                 Map.of("usn", student.getUsn(), "email", student.getEmail(), "department", student.getDepartment())
         );
 
-        return StudentResponse.from(student);
+        // Notification only. sendStudentWelcome never throws, so a provider outage
+        // cannot roll back the account that was just created — the admin is told
+        // instead, via emailSent, so they can pass the details on manually.
+        boolean emailSent = emailService.sendStudentWelcome(student);
+
+        return StudentResponse.from(student, emailSent);
     }
 
     public StudentResponse adminUpdateStudent(Long studentId, AdminUpdateStudentRequest request) {

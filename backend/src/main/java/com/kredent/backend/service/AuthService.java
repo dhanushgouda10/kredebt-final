@@ -20,20 +20,29 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final WalletService walletService;
+    private final EmailService emailService;
 
     public AuthService(
             StudentRepository studentRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
-            WalletService walletService) {
+            WalletService walletService,
+            EmailService emailService) {
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.walletService = walletService;
+        this.emailService = emailService;
     }
 
-    public void register(RegisterRequest request) {
-        if (studentRepository.existsByEmail(request.getEmail())) {
+    /**
+     * @return true if the welcome email was accepted by the provider. Registration
+     *         itself succeeds regardless — the flag is informational.
+     */
+    public boolean register(RegisterRequest request) {
+        String email = StudentService.normalizeEmail(request.getEmail());
+
+        if (studentRepository.existsByEmail(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
         if (studentRepository.existsByUsn(request.getUsn())) {
@@ -47,7 +56,7 @@ public class AuthService {
         Student student = new Student();
         student.setFullName(request.getFullName());
         student.setUsn(request.getUsn());
-        student.setEmail(request.getEmail());
+        student.setEmail(email);
         student.setPhone(request.getPhone());
         student.setDepartment(request.getDepartment());
         student.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -59,6 +68,8 @@ public class AuthService {
         student.setWalletPrivateKeyEncrypted(wallet.getEncryptedPrivateKey());
 
         studentRepository.save(student);
+
+        return emailService.sendStudentWelcome(student);
     }
 
     public AuthResponse login(LoginRequest request) {

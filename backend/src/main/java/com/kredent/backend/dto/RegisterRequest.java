@@ -1,5 +1,6 @@
 package com.kredent.backend.dto;
 
+import com.kredent.backend.validation.MvjceEmail;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
@@ -11,8 +12,11 @@ public class RegisterRequest {
     @NotBlank
     private String usn;
 
+    // Shared by both registration paths (public self-registration and admin-created
+    // accounts), so this one constraint covers both.
     @NotBlank
     @Email
+    @MvjceEmail
     private String email;
 
     @NotBlank

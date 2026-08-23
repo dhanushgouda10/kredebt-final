@@ -1,0 +1,93 @@
+name: CI
+
+# Runs on every push and pull request to the main branches.
+#
+# This workflow is the verification loop for backend work: the Spring Boot module
+# targets Java 17 and is built with Maven, so any change that fails to compile or
+# breaks a test fails the build here even if it was authored somewhere without a
+# local Java 17 toolchain.
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+# Cancel superseded runs on the same ref — avoids queueing builds for commits
+# that have already been replaced.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (Java 17 / Maven)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+          cache: maven
+
+      - name: Compile
+        run: mvn -B -ntp clean compile
+
+      - name: Run tests
+        # Secrets are deliberately NOT provided here. Tests must not require real
+        # credentials, a live database, Supabase, or a Polygon RPC endpoint — any
+        # test that does is testing the environment rather than the code.
+        run: mvn -B -ntp test
+
+      - name: Upload test reports
+        # Runs even when tests fail, so the failure is diagnosable from the run page.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-reports
+          path: backend/target/surefire-reports/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  frontend:
+    name: Frontend (Node / Vite)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        # `npm ci` installs exactly what the lockfile specifies and fails if
+        # package.json and the lockfile have drifted apart.
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        # `--if-present` so this step is a no-op until a test script exists,
+        # rather than failing the whole workflow.
+        run: npm test --if-present
+
+      - name: Build
+        # The production build is the real check: it catches broken imports and
+        # type/JSX errors that the dev server tolerates.
+        run: npm run build

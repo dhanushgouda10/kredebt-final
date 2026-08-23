@@ -21,6 +21,13 @@ public class StudentResponse {
     private LocalDateTime createdAt;
     private String walletAddress;
 
+    /**
+     * Whether the welcome email reached the provider. Only populated on creation
+     * (see StudentService.adminCreateStudent) — null everywhere else, so list and
+     * update responses are unchanged and the frontend simply shows no notice.
+     */
+    private Boolean emailSent;
+
     public static StudentResponse from(Student student) {
         StudentResponse dto = new StudentResponse();
         dto.id = student.getId();
@@ -32,6 +39,21 @@ public class StudentResponse {
         dto.createdAt = student.getCreatedAt();
         dto.walletAddress = student.getWalletAddress();
         return dto;
+    }
+
+    /** Creation variant — carries whether the welcome notification was delivered. */
+    public static StudentResponse from(Student student, boolean emailSent) {
+        StudentResponse dto = from(student);
+        dto.emailSent = emailSent;
+        return dto;
+    }
+
+    public Boolean getEmailSent() {
+        return emailSent;
+    }
+
+    public void setEmailSent(Boolean emailSent) {
+        this.emailSent = emailSent;
     }
 
     public Long getId() {

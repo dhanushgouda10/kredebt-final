@@ -29,8 +29,14 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> register(@Valid @RequestBody RegisterRequest request) {
-        authService.register(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Registration successful"));
+        boolean emailSent = authService.register(request);
+        // Existing Map<String,String> shape preserved; emailSent is additive so any
+        // client that ignores it keeps working exactly as before.
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                "message", emailSent
+                        ? "Registration successful. A confirmation email has been sent."
+                        : "Registration successful.",
+                "emailSent", String.valueOf(emailSent)));
     }
 
     @PostMapping("/login")
