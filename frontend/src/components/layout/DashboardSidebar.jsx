@@ -47,8 +47,8 @@ function SidebarNav({ onNavigate }) {
       <div className="mb-8 flex items-center gap-3 px-2">
         <img src="/MVJCE_-_New_Logo.png" alt="Kredent logo" className="h-9 w-9 object-contain" />
         <div>
-          <p className="heading-serif text-xl leading-tight">Kredent</p>
-          <p className="text-[11px] tracking-wide text-white/60">Admin Portal</p>
+          <p className="heading-serif text-h3 leading-tight">Kredent</p>
+          <p className="text-micro tracking-wide text-white/60">Admin Portal</p>
         </div>
       </div>
       <nav className="space-y-1.5">
@@ -58,7 +58,7 @@ function SidebarNav({ onNavigate }) {
             to={link.to}
             onClick={onNavigate}
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition ${
+              `flex items-center gap-3 rounded-lg px-4 py-3 text-caption font-semibold transition ${
                 isActive
                   ? 'bg-kredent-accent text-white shadow-md'
                   : 'text-white/80 hover:bg-white/10 hover:text-white'
@@ -70,7 +70,7 @@ function SidebarNav({ onNavigate }) {
           </NavLink>
         ))}
       </nav>
-      <div className="mt-auto pt-6 text-[11px] text-white/40">Kredent · MVJCE Blockchain System</div>
+      <div className="mt-auto pt-6 text-micro text-white/40">Kredent · MVJCE Blockchain System</div>
     </>
   )
 }
@@ -92,7 +92,7 @@ export function DashboardSidebar() {
       <div className="flex items-center justify-between bg-kredent-navy px-4 py-3 text-white md:hidden">
         <div className="flex items-center gap-2.5">
           <img src="/MVJCE_-_New_Logo.png" alt="Kredent logo" className="h-8 w-8 object-contain" />
-          <p className="heading-serif text-lg leading-tight">Kredent Admin</p>
+          <p className="heading-serif text-body-l leading-tight">Kredent Admin</p>
         </div>
         <button
           type="button"

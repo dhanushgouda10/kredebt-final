@@ -1,14 +1,14 @@
 const BASE =
-  'w-full rounded-lg border bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400'
+  'w-full rounded-lg border bg-surface-raised px-4 py-3 text-caption text-mvj-ink placeholder:text-mvj-muted/60 transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-mvj-muted'
 
 const STATE = {
-  default: 'border-gray-300 focus:border-kredent-navy focus:ring-kredent-navy/25',
+  default: 'border-surface-line-strong focus:border-mvj-navy focus:ring-mvj-navy/20',
   error: 'border-red-400 focus:border-red-500 focus:ring-red-500/25',
 }
 
 export function Label({ children, required, htmlFor, className = '' }) {
   return (
-    <label htmlFor={htmlFor} className={`mb-2 block text-sm font-semibold text-gray-700 ${className}`}>
+    <label htmlFor={htmlFor} className={`mb-2 block text-caption font-semibold text-mvj-ink ${className}`}>
       {children}
       {required && (
         <span className="ml-0.5 text-red-500" aria-hidden="true">
@@ -22,7 +22,7 @@ export function Label({ children, required, htmlFor, className = '' }) {
 export function FieldError({ children }) {
   if (!children) return null
   return (
-    <p role="alert" className="mt-1.5 text-xs font-medium text-red-600">
+    <p role="alert" className="mt-1.5 text-micro font-medium text-red-600">
       {children}
     </p>
   )
@@ -51,8 +51,8 @@ export function Input({ label, id, required, error, hint, className = '', contai
         className={`${BASE} ${error ? STATE.error : STATE.default} ${className}`}
         {...rest}
       />
-      {error && <p id={`${inputId}-error`} role="alert" className="mt-1.5 text-xs font-medium text-red-600">{error}</p>}
-      {!error && hint && <p className="mt-1.5 text-xs text-gray-500">{hint}</p>}
+      {error && <p id={`${inputId}-error`} role="alert" className="mt-1.5 text-micro font-medium text-red-600">{error}</p>}
+      {!error && hint && <p className="mt-1.5 text-micro text-mvj-muted">{hint}</p>}
     </div>
   )
 }
@@ -76,8 +76,8 @@ export function Select({ label, id, required, error, hint, className = '', conta
       >
         {children}
       </select>
-      {error && <p role="alert" className="mt-1.5 text-xs font-medium text-red-600">{error}</p>}
-      {!error && hint && <p className="mt-1.5 text-xs text-gray-500">{hint}</p>}
+      {error && <p role="alert" className="mt-1.5 text-micro font-medium text-red-600">{error}</p>}
+      {!error && hint && <p className="mt-1.5 text-micro text-mvj-muted">{hint}</p>}
     </div>
   )
 }

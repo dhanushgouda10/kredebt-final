@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 
 /**
  * Floating "back to top" action button — appears once the user has scrolled
@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from 'framer-motion'
  */
 export function ScrollToTopButton() {
   const [visible, setVisible] = useState(false)
+  const prefersReducedMotion = useReducedMotion()
 
   useEffect(() => {
     const handleScroll = () => setVisible(window.scrollY > 480)
@@ -19,7 +20,7 @@ export function ScrollToTopButton() {
   }, [])
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' })
   }
 
   return (
@@ -35,7 +36,7 @@ export function ScrollToTopButton() {
           whileHover={{ y: -3 }}
           whileTap={{ scale: 0.92 }}
           transition={{ duration: 0.2 }}
-          className="bg-gradient-accent shadow-fab fixed bottom-6 right-5 z-40 flex h-12 w-12 items-center justify-center rounded-full text-white sm:bottom-8 sm:right-8"
+          className="bg-[#F7941D] hover:bg-[#E2681F] shadow-fab fixed bottom-6 right-5 z-40 flex h-12 w-12 items-center justify-center rounded-full text-white sm:bottom-8 sm:right-8"
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />

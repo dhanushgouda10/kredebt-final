@@ -37,7 +37,7 @@ export function Alert({ variant = 'info', title, children, className = '' }) {
   const config = VARIANTS[variant] ?? VARIANTS.info
 
   return (
-    <div role="alert" className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm ${config.wrap} ${className}`}>
+    <div role="alert" className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-caption ${config.wrap} ${className}`}>
       {config.icon}
       <div>
         {title && <p className="font-semibold">{title}</p>}

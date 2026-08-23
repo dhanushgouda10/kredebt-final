@@ -1,13 +1,12 @@
 /**
- * Base card shell used across the app. Replaces the many hand-copied
- * "bg-white rounded-2xl shadow-xl border border-gray-100" blocks with one
- * consistent component (same radius, shadow and hover behavior everywhere).
+ * Base card shell — border only, no shadow. Portal surfaces use rules and
+ * whitespace, not lifted cards on every block.
  */
-export function Card({ children, className = '', hover = false, as: Comp = 'div', ...rest }) {
+export function Card({ children, className = '', elevated = false, as: Comp = 'div', ...rest }) {
   return (
     <Comp
-      className={`overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[var(--shadow-card)] ${
-        hover ? 'transition-shadow duration-300 hover:shadow-[var(--shadow-card-hover)]' : ''
+      className={`overflow-hidden rounded-lg border border-surface-line bg-surface-raised ${
+        elevated ? 'shadow-card' : ''
       } ${className}`}
       {...rest}
     >
@@ -16,21 +15,14 @@ export function Card({ children, className = '', hover = false, as: Comp = 'div'
   )
 }
 
-/** The repeated navy gradient header bar (icon + title + subtitle) used on most form/table cards. */
-export function CardHeader({ icon, title, subtitle, action, className = '' }) {
+/** Flat navy header bar for form/table cards — no icon chip. */
+export function CardHeader({ title, subtitle, action, className = '' }) {
   return (
-    <div className={`bg-gradient-to-r from-kredent-navy to-kredent-navy-deep p-6 ${className}`}>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center space-x-3">
-          {icon && (
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white/20">
-              {icon}
-            </div>
-          )}
-          <div>
-            <h2 className="text-xl font-bold text-white">{title}</h2>
-            {subtitle && <p className="text-sm text-white/80">{subtitle}</p>}
-          </div>
+    <div className={`border-b border-white/10 bg-mvj-navy px-6 py-5 ${className}`}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-h3 font-bold text-white">{title}</h2>
+          {subtitle && <p className="mt-1 text-caption text-white/75">{subtitle}</p>}
         </div>
         {action && <div className="flex-shrink-0">{action}</div>}
       </div>

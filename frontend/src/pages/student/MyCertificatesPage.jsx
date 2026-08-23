@@ -1,19 +1,18 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Alert, Badge, Card, EmptyState, PageHeader, SkeletonRow } from '../../components/ui'
+import { Alert, Button, Card, EmptyState, PageHeader, SkeletonLines } from '../../components/ui'
 import { downloadCertificateFile, getMyCertificates } from '../../services/certificateService'
+import { certificateStatusMeta } from '../../utils/certificateStatus'
 
-const STATUS_META = {
-  PENDING_MINT: { label: 'Pending Mint', variant: 'warning' },
-  MINTED: { label: 'Minted', variant: 'success' },
-  MINT_FAILED: { label: 'Mint Failed', variant: 'danger' },
-  REVOKED: { label: 'Revoked', variant: 'danger' },
-}
-
-function statusMeta(status) {
-  return STATUS_META[status] ?? { label: status, variant: 'neutral' }
-}
-
+/**
+ * A graduate's certificate list.
+ *
+ * Was an eight-column table including Token ID and "Minted" date — a developer's
+ * view of the data, and unusable on a phone without horizontal scrolling. A
+ * student typically has one or two records here, so a table was the wrong
+ * primitive entirely: this is now a list of records, with the on-chain
+ * identifiers left to the detail page where they can be explained.
+ */
 export function MyCertificatesPage() {
   const [certificates, setCertificates] = useState([])
   const [loading, setLoading] = useState(true)
@@ -44,9 +43,13 @@ export function MyCertificatesPage() {
   }
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-14 sm:py-16">
-      <div className="mx-auto max-w-[1200px] px-5 lg:px-10">
-        <PageHeader title="My Certificates" subtitle="Certificates issued to you by MVJCE" />
+    <section className="min-h-screen bg-surface-page py-10 sm:py-12">
+      <div className="mx-auto max-w-[1100px] px-5 lg:px-10">
+        <PageHeader
+          eyebrow="Student portal"
+          title="My certificates"
+          subtitle="Certificates issued to you by MVJ College of Engineering."
+        />
 
         {loadError && (
           <Alert variant="error" title="Could not load certificates" className="mb-6">
@@ -54,79 +57,78 @@ export function MyCertificatesPage() {
           </Alert>
         )}
         {actionError && (
-          <Alert variant="error" title="Action failed" className="mb-6">
+          <Alert variant="error" title="Download failed" className="mb-6">
             {actionError}
           </Alert>
         )}
 
-        <Card>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-100 text-left">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Certificate</th>
-                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Department</th>
-                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Year</th>
-                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Status</th>
-                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Issued</th>
-                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Minted</th>
-                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Token ID</th>
-                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {loading ? (
-                  Array.from({ length: 4 }).map((_, i) => <SkeletonRow key={i} columns={8} />)
-                ) : certificates.length === 0 ? (
-                  <tr>
-                    <td colSpan={8}>
-                      <EmptyState
-                        title="No certificates yet"
-                        description="Once the college issues you a certificate, it will show up here."
-                      />
-                    </td>
-                  </tr>
-                ) : (
-                  certificates.map((cert) => (
-                    <tr key={cert.id}>
-                      <td className="px-6 py-4">
-                        <p className="font-semibold text-gray-900">{cert.degreeName}</p>
-                        <code className="text-xs text-gray-500">{cert.certificateNumber}</code>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{cert.department}</td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{cert.yearOfCompletion}</td>
-                      <td className="px-6 py-4">
-                        <Badge variant={statusMeta(cert.status).variant}>{statusMeta(cert.status).label}</Badge>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{cert.issuedAt?.slice(0, 10) ?? '—'}</td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{cert.mintedAt?.slice(0, 10) ?? '—'}</td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{cert.tokenId ?? '—'}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center space-x-3">
-                          <Link
-                            to={`/student/certificates/${cert.id}`}
-                            className="rounded text-sm font-medium text-kredent-accent transition-colors hover:text-orange-700"
+        {loading ? (
+          <Card className="p-8">
+            <SkeletonLines lines={5} />
+          </Card>
+        ) : certificates.length === 0 ? (
+          <Card>
+            <EmptyState
+              title="No certificates yet"
+              description="Once the college issues you a certificate, it will show up here."
+            />
+          </Card>
+        ) : (
+          <ul className="space-y-4">
+            {certificates.map((cert) => {
+              const meta = certificateStatusMeta(cert.status)
+              return (
+                <li key={cert.id}>
+                  <Card className="p-6">
+                    <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <h2 className="font-serif text-body-l font-bold text-kredent-navy">{cert.degreeName}</h2>
+
+                        <p className="mt-1 font-mono text-micro text-mvj-muted/75">{cert.certificateNumber}</p>
+
+                        <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2 text-caption">
+                          <div className="flex gap-2">
+                            <dt className="text-mvj-muted/75">Department</dt>
+                            <dd className="font-medium text-mvj-ink">{cert.department}</dd>
+                          </div>
+                          <div className="flex gap-2">
+                            <dt className="text-mvj-muted/75">Year</dt>
+                            <dd className="font-medium text-mvj-ink">{cert.yearOfCompletion}</dd>
+                          </div>
+                          <div className="flex gap-2">
+                            <dt className="text-mvj-muted/75">Issued</dt>
+                            <dd className="font-medium text-mvj-ink">{cert.issuedAt?.slice(0, 10) ?? '—'}</dd>
+                          </div>
+                        </dl>
+
+                        {meta.plain && <p className="mt-4 text-caption text-mvj-muted">{meta.plain}</p>}
+                      </div>
+
+                      <div className="flex flex-shrink-0 flex-wrap items-center gap-3">
+                        {cert.fileAvailable && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDownload(cert)}
+                            loading={downloadingId === cert.id}
                           >
-                            View Details
-                          </Link>
-                          {cert.fileAvailable && (
-                            <button
-                              onClick={() => handleDownload(cert)}
-                              disabled={downloadingId === cert.id}
-                              className="rounded text-sm font-medium text-gray-700 transition-colors hover:text-gray-900 disabled:opacity-50"
-                            >
-                              {downloadingId === cert.id ? 'Downloading…' : 'Download'}
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+                            Download
+                          </Button>
+                        )}
+                        <Link
+                          to={`/student/certificates/${cert.id}`}
+                          className="text-caption font-semibold text-kredent-accent hover:underline"
+                        >
+                          View details
+                        </Link>
+                      </div>
+                    </div>
+                  </Card>
+                </li>
+              )
+            })}
+          </ul>
+        )}
       </div>
     </section>
   )

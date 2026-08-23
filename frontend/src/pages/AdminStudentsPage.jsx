@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
 import {
   Alert,
   Badge,
@@ -23,6 +22,7 @@ import {
   updateStudent,
 } from '../services/adminStudentService'
 import { listDepartments } from '../services/departmentService'
+import { normalizeEmail, validateCollegeEmail } from '../utils/collegeEmail'
 
 const PAGE_SIZE = 15
 
@@ -74,6 +74,9 @@ export function AdminStudentsPage() {
 
   const [searchInput, setSearchInput] = useState('')
   const [appliedSearch, setAppliedSearch] = useState('')
+
+  // Post-creation notice: whether the student's welcome email actually went out.
+  const [notice, setNotice] = useState('')
 
   const [createOpen, setCreateOpen] = useState(false)
   const [createForm, setCreateForm] = useState(EMPTY_CREATE_FORM)
@@ -167,21 +170,41 @@ export function AdminStudentsPage() {
   const onCreateSubmit = async (e) => {
     e.preventDefault()
     setCreateError('')
+
+    // Institutional email rule — checked here for immediate feedback. The backend
+    // re-validates on RegisterRequest, which is the actual enforcement point.
+    const emailError = validateCollegeEmail(createForm.email)
+    if (emailError) {
+      setCreateError(emailError)
+      return
+    }
+
     if (createForm.password !== createForm.confirmPassword) {
       setCreateError('Passwords do not match.')
       return
     }
     setCreateSubmitting(true)
     try {
-      await createStudent({
+      const created = await createStudent({
         fullName: createForm.fullName.trim(),
         usn: createForm.usn.trim(),
-        email: createForm.email.trim(),
+        email: normalizeEmail(createForm.email),
         phone: createForm.phone.trim(),
         department: createForm.department,
         password: createForm.password,
       })
       setCreateOpen(false)
+      // The account exists either way; the backend reports separately whether the
+      // welcome email actually reached the student, so the admin knows whether to
+      // follow up manually. `emailSent` is absent on older responses → treated as
+      // "no notice to show" rather than a failure.
+      if (created && created.emailSent === false) {
+        setNotice(
+          `${created.fullName ?? 'Student'} was created, but the notification email could not be delivered. Please inform them directly.`,
+        )
+      } else if (created && created.emailSent === true) {
+        setNotice(`${created.fullName ?? 'Student'} was created and a notification email was sent.`)
+      }
       listDepartments().then(setDepartments).catch(() => {})
       loadStudents(0)
     } catch (err) {
@@ -240,9 +263,13 @@ export function AdminStudentsPage() {
   const departmentLabel = (code) => departments.find((d) => d.code === code)?.label ?? code
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-14 sm:py-16">
+    <section className="min-h-screen bg-surface-page py-14 sm:py-16">
       <div className="mx-auto max-w-[1200px] px-5 lg:px-10">
-        <PageHeader title="Students" subtitle="Manage student accounts by department — certificates are issued against these records" />
+        <PageHeader
+          eyebrow="Administration"
+          title="Students"
+          subtitle="Student records, by department. Certificates are issued against these accounts."
+        />
 
         {departmentsError && (
           <Alert variant="error" title="Could not load departments" className="mb-6">
@@ -255,15 +282,24 @@ export function AdminStudentsPage() {
           </Alert>
         )}
 
+        {notice && (
+          <Alert
+            variant={notice.includes('could not be delivered') ? 'warning' : 'success'}
+            className="mb-6"
+          >
+            {notice}
+          </Alert>
+        )}
+
         {/* Department switcher */}
         <div className="mb-6 flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => selectDepartment('')}
-            className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+            className={`rounded-md border px-4 py-2.5 text-caption font-medium transition ${
               selectedDepartment === ''
                 ? 'border-kredent-navy bg-kredent-navy text-white'
-                : 'border-gray-300 bg-white text-gray-700 hover:border-kredent-navy/50'
+                : 'border-surface-line bg-surface-raised text-mvj-muted hover:border-kredent-navy/50'
             }`}
           >
             All Departments
@@ -273,10 +309,10 @@ export function AdminStudentsPage() {
               key={dept.code}
               type="button"
               onClick={() => selectDepartment(dept.code)}
-              className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+              className={`rounded-md border px-4 py-2.5 text-caption font-medium transition ${
                 selectedDepartment === dept.code
                   ? 'border-kredent-accent bg-kredent-accent text-white'
-                  : 'border-gray-300 bg-white text-gray-700 hover:border-kredent-accent/50'
+                  : 'border-surface-line bg-surface-raised text-mvj-muted hover:border-kredent-accent/50'
               }`}
             >
               {dept.code} <span className="opacity-70">({dept.studentCount})</span>
@@ -284,7 +320,7 @@ export function AdminStudentsPage() {
           ))}
         </div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <div>
           <Card>
             <CardHeader
               title={selectedDepartment ? departmentLabel(selectedDepartment) : 'All Students'}
@@ -295,11 +331,6 @@ export function AdminStudentsPage() {
                       selectedDepartment ? ` in ${selectedDepartment}` : ' total'
                     }`
               }
-              icon={
-                <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-              }
               action={
                 <Button variant="accent" onClick={openCreate}>
                   Add Student
@@ -307,7 +338,7 @@ export function AdminStudentsPage() {
               }
             />
 
-            <div className="border-b border-gray-200 p-6">
+            <div className="border-b border-surface-line p-6">
               <form onSubmit={onSearchSubmit} className="flex flex-col gap-3 sm:flex-row">
                 <Input
                   placeholder="Search by name, USN, or email…"
@@ -336,18 +367,18 @@ export function AdminStudentsPage() {
 
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="border-b border-gray-200 bg-gray-50">
+                <thead className="border-b border-surface-line bg-surface-sunken">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Student</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">USN</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Department</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Contact</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Wallet</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Joined</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Actions</th>
+                    <th className="px-6 py-5 text-left text-label text-mvj-muted">Student</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">USN</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Department</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Contact</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Wallet</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Joined</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-surface-line">
                   {loading ? (
                     Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} columns={7} />)
                   ) : students.length === 0 ? (
@@ -356,60 +387,52 @@ export function AdminStudentsPage() {
                         <EmptyState
                           title="No students found"
                           description="Try a different search term or department, or add a new student account."
-                          icon={
-                            <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                            </svg>
-                          }
                         />
                       </td>
                     </tr>
                   ) : (
-                    students.map((student, idx) => (
-                      <motion.tr
+                    students.map((student) => (
+                      <tr
                         key={student.id}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.25, delay: Math.min(idx * 0.02, 0.3) }}
-                        className="cursor-pointer transition-colors hover:bg-gray-50"
+                        className="cursor-pointer transition-colors hover:bg-surface-sunken"
                         onClick={() => openDetail(student)}
                       >
-                        <td className="px-6 py-4">
-                          <p className="text-sm font-medium text-gray-900">{student.fullName}</p>
-                          <p className="text-xs text-gray-500">{student.email}</p>
+                        <td className="px-6 py-5">
+                          <p className="text-caption font-medium text-mvj-ink">{student.fullName}</p>
+                          <p className="text-micro text-mvj-muted/75">{student.email}</p>
                         </td>
-                        <td className="px-6 py-4">
-                          <code className="rounded bg-gray-100 px-2 py-1 font-mono text-xs text-gray-700">{student.usn}</code>
+                        <td className="px-6 py-5">
+                          <code className="rounded bg-surface-sunken px-2 py-1 font-mono text-micro text-mvj-muted">{student.usn}</code>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-5">
                           <Badge variant="info">{student.department}</Badge>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-700">{student.phone || '—'}</td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-5 text-caption text-mvj-muted">{student.phone || '—'}</td>
+                        <td className="px-6 py-5">
                           {student.walletAddress ? (
                             <code
-                              className="rounded bg-gray-100 px-2 py-1 font-mono text-xs text-gray-700"
+                              className="rounded bg-surface-sunken px-2 py-1 font-mono text-micro text-mvj-muted"
                               title={student.walletAddress}
                             >
                               {truncateWallet(student.walletAddress)}
                             </code>
                           ) : (
-                            <span className="text-sm text-gray-400">Not assigned</span>
+                            <span className="text-caption text-mvj-muted/75">Not assigned</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-700">{formatDate(student.createdAt)}</td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-5 text-caption text-mvj-muted">{formatDate(student.createdAt)}</td>
+                        <td className="px-6 py-5">
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
                               openEdit(student)
                             }}
-                            className="rounded text-sm font-medium text-kredent-accent transition-colors hover:text-orange-700"
+                            className="rounded text-caption font-medium text-kredent-accent transition-colors hover:text-orange-700"
                           >
                             Edit
                           </button>
                         </td>
-                      </motion.tr>
+                      </tr>
                     ))
                   )}
                 </tbody>
@@ -426,12 +449,12 @@ export function AdminStudentsPage() {
               />
             )}
           </Card>
-        </motion.div>
+        </div>
       </div>
 
       {/* Add Student modal */}
       <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Add Student">
-        <form onSubmit={onCreateSubmit} className="space-y-4 p-6">
+        <form onSubmit={onCreateSubmit} className="space-y-6 p-6">
           <Input label="Full Name" name="fullName" value={createForm.fullName} onChange={onCreateChange} required />
           <Input
             label="USN"
@@ -477,7 +500,7 @@ export function AdminStudentsPage() {
       {/* Edit Student modal */}
       <Modal open={Boolean(editStudent)} onClose={() => setEditStudent(null)} title="Edit Student">
         {editStudent && (
-          <form onSubmit={onEditSubmit} className="space-y-4 p-6">
+          <form onSubmit={onEditSubmit} className="space-y-6 p-6">
             <Input label="USN" value={editStudent.usn} disabled hint="USN cannot be changed." />
             <Input label="Full Name" name="fullName" value={editForm.fullName} onChange={onEditChange} required />
             <Input label="Email Address" type="email" name="email" value={editForm.email} onChange={onEditChange} required />
@@ -511,59 +534,59 @@ export function AdminStudentsPage() {
           <div className="space-y-5 p-6">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-sm text-gray-600">Full Name</p>
-                <p className="font-semibold text-gray-900">{detailStudent.fullName}</p>
+                <p className="text-caption text-mvj-muted">Full Name</p>
+                <p className="font-semibold text-mvj-ink">{detailStudent.fullName}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">USN</p>
-                <p className="font-mono text-sm text-gray-900">{detailStudent.usn}</p>
+                <p className="text-caption text-mvj-muted">USN</p>
+                <p className="font-mono text-caption text-mvj-ink">{detailStudent.usn}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Department</p>
+                <p className="text-caption text-mvj-muted">Department</p>
                 <Badge variant="info">{detailStudent.department}</Badge>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Joined</p>
-                <p className="font-semibold text-gray-900">{formatDate(detailStudent.createdAt)}</p>
+                <p className="text-caption text-mvj-muted">Joined</p>
+                <p className="font-semibold text-mvj-ink">{formatDate(detailStudent.createdAt)}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Email</p>
-                <p className="text-sm text-gray-900">{detailStudent.email}</p>
+                <p className="text-caption text-mvj-muted">Email</p>
+                <p className="text-caption text-mvj-ink">{detailStudent.email}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Phone</p>
-                <p className="text-sm text-gray-900">{detailStudent.phone || '—'}</p>
+                <p className="text-caption text-mvj-muted">Phone</p>
+                <p className="text-caption text-mvj-ink">{detailStudent.phone || '—'}</p>
               </div>
               <div className="sm:col-span-2">
-                <p className="text-sm text-gray-600">System-managed Wallet</p>
+                <p className="text-caption text-mvj-muted">System-managed Wallet</p>
                 <div className="flex items-start justify-between gap-2">
-                  <p className="break-all font-mono text-xs text-gray-900">{detailStudent.walletAddress || 'Not assigned'}</p>
+                  <p className="break-all font-mono text-micro text-mvj-ink">{detailStudent.walletAddress || 'Not assigned'}</p>
                   {detailStudent.walletAddress && <CopyButton value={detailStudent.walletAddress} label="wallet address" />}
                 </div>
               </div>
             </div>
 
-            <div className="border-t border-gray-200 pt-4">
-              <p className="mb-3 text-sm font-semibold text-gray-700">Certificates</p>
+            <div className="border-t border-surface-line pt-4">
+              <p className="mb-3 text-caption font-semibold text-mvj-muted">Certificates</p>
               {detailError && (
                 <Alert variant="error" className="mb-3">
                   {detailError}
                 </Alert>
               )}
               {detailLoading ? (
-                <p className="text-sm text-gray-500">Loading…</p>
+                <p className="text-caption text-mvj-muted/75">Loading…</p>
               ) : detailCertificates.length === 0 ? (
-                <p className="text-sm text-gray-500">No certificates issued to this student yet.</p>
+                <p className="text-caption text-mvj-muted/75">No certificates issued to this student yet.</p>
               ) : (
                 <ul className="space-y-2">
                   {detailCertificates.map((cert) => (
                     <li
                       key={cert.id}
-                      className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3"
+                      className="flex items-center justify-between rounded-lg border border-surface-line px-4 py-3"
                     >
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{cert.degreeName}</p>
-                        <code className="text-xs text-gray-500">{cert.certificateNumber}</code>
+                        <p className="text-caption font-medium text-mvj-ink">{cert.degreeName}</p>
+                        <code className="text-micro text-mvj-muted/75">{cert.certificateNumber}</code>
                       </div>
                       <Badge variant={statusMeta(cert.status).variant}>{statusMeta(cert.status).label}</Badge>
                     </li>

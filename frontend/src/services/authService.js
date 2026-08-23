@@ -37,16 +37,43 @@ export async function loginStudent(body) {
   return res.json()
 }
 
-// Admin login is wallet-address based: the frontend connects MetaMask, then
-// sends the connected address here. The backend checks the address against
-// pre-registered admin wallets. Real signature-based proof-of-ownership
-// (sign a challenge with the wallet's private key) lands with the Blockchain
-// module — for now this only verifies "this address is a known admin".
-export async function loginAdminWithWallet(walletAddress) {
+/**
+ * Step 1 of admin login: ask the backend for a one-time challenge to sign.
+ *
+ * The nonce is short-lived and single-use. Requesting one does NOT authenticate
+ * anything and does not reveal whether the address belongs to an admin — the
+ * backend issues a challenge either way, so this endpoint cannot be used to
+ * enumerate admin wallets.
+ */
+export async function requestAdminNonce(walletAddress) {
+  const res = await fetch(
+    `${API_BASE}/api/auth/admin/nonce?address=${encodeURIComponent(walletAddress)}`,
+  )
+  if (!res.ok) {
+    throw new Error(await parseErrorMessage(res))
+  }
+  const data = await res.json()
+  if (!data?.nonce) {
+    throw new Error('The server did not return a valid login challenge.')
+  }
+  return data.nonce
+}
+
+/**
+ * Step 3 of admin login: submit the signed challenge.
+ *
+ * Proof of wallet ownership. The backend recovers the signer from the nonce +
+ * signature and only issues an ADMIN token if the recovered address matches the
+ * claimed one AND that address is a registered admin. Knowing a public address
+ * is therefore no longer sufficient to log in.
+ *
+ * The signature is sent once and never persisted client-side.
+ */
+export async function loginAdminWithSignature(walletAddress, signature) {
   const res = await fetch(`${API_BASE}/api/auth/admin/wallet-login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ walletAddress }),
+    body: JSON.stringify({ walletAddress, signature }),
   })
   if (!res.ok) {
     throw new Error(await parseErrorMessage(res))

@@ -13,7 +13,7 @@ const VARIANTS = {
   danger: 'bg-red-100 text-red-800',
   warning: 'bg-amber-100 text-amber-800',
   info: 'bg-blue-100 text-blue-800',
-  neutral: 'bg-gray-100 text-gray-700',
+  neutral: 'bg-surface-sunken text-mvj-muted',
 }
 
 const DOT_COLORS = {
@@ -21,7 +21,7 @@ const DOT_COLORS = {
   danger: 'bg-red-600',
   warning: 'bg-amber-600',
   info: 'bg-blue-600',
-  neutral: 'bg-gray-500',
+  neutral: 'bg-mvj-muted',
 }
 
 /**
@@ -34,7 +34,7 @@ export function Badge({ status, variant, children, dot = true, className = '' })
   const resolved = variant ?? STATUS_MAP[status?.toLowerCase()] ?? 'neutral'
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${VARIANTS[resolved]} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-micro font-semibold ${VARIANTS[resolved]} ${className}`}
     >
       {dot && <span className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${DOT_COLORS[resolved]}`} aria-hidden="true" />}
       {children ?? status}

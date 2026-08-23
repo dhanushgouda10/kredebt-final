@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { listPublicDepartments, loginStudent, registerStudent } from '../services/authService'
 import { useAuth } from '../context/useAuth'
 import { Alert, Button, Input, PasswordInput, Select } from '../components/ui'
+import { normalizeEmail, validateCollegeEmail } from '../utils/collegeEmail'
 
 export function LoginSignupPage() {
   const [activeTab, setActiveTab] = useState('register')
@@ -52,6 +52,15 @@ export function LoginSignupPage() {
     setFormError(null)
 
     if (activeTab === 'register') {
+      // Same institutional email rule the admin create form applies, so a student
+      // cannot self-register with a personal address and bypass it. The backend
+      // enforces it independently on RegisterRequest.
+      const emailError = validateCollegeEmail(formData.email)
+      if (emailError) {
+        setFormError(emailError)
+        return
+      }
+
       if (formData.password !== formData.confirmPassword) {
         setFormError('Passwords do not match.')
         return
@@ -61,7 +70,7 @@ export function LoginSignupPage() {
         await registerStudent({
           fullName: formData.name.trim(),
           usn: formData.usn.trim(),
-          email: formData.email.trim(),
+          email: normalizeEmail(formData.email),
           phone: formData.mobile.trim(),
           department: formData.department,
           password: formData.password,
@@ -97,36 +106,28 @@ export function LoginSignupPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-10 sm:py-12">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
-        {/* Logo */}
-        <div className="mb-6 text-center">
-          <div className="mb-4 flex items-center justify-center">
-            <img src="/MVJCE_-_New_Logo.png" alt="Kredent logo" className="mr-4 h-16 w-16 object-contain sm:h-20 sm:w-20" />
+    <div className="flex min-h-screen items-center justify-center bg-surface-page px-4 py-12 sm:py-16">
+      <div className="w-full max-w-md">
+        <div className="mb-8 text-center">
+          <div className="mb-4 flex items-center justify-center gap-4">
+            <img src="/MVJCE_-_New_Logo.png" alt="" className="h-14 w-14 object-contain sm:h-16 sm:w-16" />
             <div className="text-left">
-              <h1 className="font-serif text-3xl font-bold text-gray-900 sm:text-4xl">KREDENT</h1>
-              <p className="text-xs tracking-wider text-gray-600 sm:text-sm">MVJCE STUDENT PORTAL</p>
+              <h1 className="text-h2 font-bold text-mvj-navy">KREDENT</h1>
+              <p className="text-label mt-1 text-mvj-muted">Student Portal</p>
             </div>
           </div>
         </div>
 
-        {/* Main Form Container */}
-        <div className="overflow-hidden rounded-2xl bg-white shadow-2xl">
-          {/* Tabs */}
-          <div className="flex border-b border-gray-200">
+        <div className="overflow-hidden rounded-lg border border-surface-line bg-surface-raised">
+          <div className="flex border-b border-surface-line">
             <button
               type="button"
               onClick={() => {
                 setFormError(null)
                 setActiveTab('register')
               }}
-              className={`flex-1 py-4 text-center font-semibold transition-colors duration-200 ${
-                activeTab === 'register' ? 'bg-kredent-accent text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+              className={`flex-1 py-4 text-center text-caption font-semibold transition-colors ${
+                activeTab === 'register' ? 'bg-mvj-orange text-white' : 'bg-surface-sunken text-mvj-muted hover:text-mvj-ink'
               }`}
             >
               Register
@@ -137,148 +138,80 @@ export function LoginSignupPage() {
                 setFormError(null)
                 setActiveTab('login')
               }}
-              className={`flex-1 py-4 text-center font-semibold transition-colors duration-200 ${
-                activeTab === 'login' ? 'bg-kredent-accent text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+              className={`flex-1 py-4 text-center text-caption font-semibold transition-colors ${
+                activeTab === 'login' ? 'bg-mvj-orange text-white' : 'bg-surface-sunken text-mvj-muted hover:text-mvj-ink'
               }`}
             >
               Login
             </button>
           </div>
 
-          {/* Form Content */}
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, x: -16 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.25 }}
-            className="p-6 sm:p-8"
-          >
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="p-6 sm:p-8">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {activeTab === 'register' ? (
                 <>
-                  <Input label="Full Name" name="name" value={formData.name} onChange={handleInputChange} required placeholder="Enter your full name" />
-
-                  <Input
-                    label="USN"
-                    name="usn"
-                    value={formData.usn}
-                    onChange={handleInputChange}
-                    required
-                    className="uppercase"
-                    placeholder="e.g. 1MJ21CS001"
-                  />
-
-                  <Input
-                    label="Email Address"
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="Enter your email"
-                  />
-
-                  <Input
-                    label="Mobile Number"
-                    type="tel"
-                    name="mobile"
-                    value={formData.mobile}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="Enter mobile number"
-                  />
-
+                  <Input label="Full name" name="name" value={formData.name} onChange={handleInputChange} required />
+                  <Input label="USN" name="usn" value={formData.usn} onChange={handleInputChange} required />
+                  <Input label="Email" name="email" type="email" value={formData.email} onChange={handleInputChange} required />
+                  <Input label="Mobile" name="mobile" type="tel" value={formData.mobile} onChange={handleInputChange} required />
                   <Select
                     label="Department"
                     name="department"
                     value={formData.department}
                     onChange={handleInputChange}
                     required
-                    disabled={departments.length === 0 && !departmentsError}
-                    hint={departmentsError ? 'Could not load departments — please refresh.' : undefined}
+                    disabled={departments.length === 0}
                   >
-                    <option value="">{departments.length === 0 && !departmentsError ? 'Loading departments…' : 'Select Department'}</option>
+                    <option value="">Select department</option>
                     {departments.map((dept) => (
                       <option key={dept.code} value={dept.code}>
-                        {dept.code} — {dept.label}
+                        {dept.label ?? dept.code}
                       </option>
                     ))}
                   </Select>
-
-                  <PasswordInput
-                    label="Password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="Enter password"
-                  />
-
+                  {departmentsError && <Alert variant="error">{departmentsError}</Alert>}
+                  <PasswordInput label="Password" name="password" value={formData.password} onChange={handleInputChange} required />
                   <PasswordInput
                     label="Confirm password"
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     required
-                    placeholder="Re-enter password"
                   />
-
-                  <div className="flex items-start">
+                  <label className="flex items-start gap-3 text-body text-mvj-muted">
                     <input
                       type="checkbox"
                       name="agreeTerms"
                       checked={formData.agreeTerms}
                       onChange={handleInputChange}
                       required
-                      className="mt-1 h-4 w-4 rounded border-gray-300 text-kredent-accent focus:ring-kredent-accent"
+                      className="mt-1"
                     />
-                    <label className="ml-2 text-sm text-gray-600">
-                      I agree to receive information from Kredent and I accept the Terms &amp; Conditions
-                    </label>
-                  </div>
+                    I agree to the MVJCE terms of service
+                  </label>
                 </>
               ) : (
                 <>
-                  <Input
-                    label="Email Address"
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="Enter your email"
-                  />
-
-                  <PasswordInput
-                    label="Password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="Enter your password"
-                  />
+                  <Input label="Email" name="email" type="email" value={formData.email} onChange={handleInputChange} required />
+                  <PasswordInput label="Password" name="password" value={formData.password} onChange={handleInputChange} required />
                 </>
               )}
 
               {formError && <Alert variant="error">{formError}</Alert>}
 
-              <Button type="submit" variant="accent" fullWidth loading={submitting} size="lg">
-                {submitting ? 'Please wait…' : activeTab === 'register' ? 'Register' : 'Login'}
+              <Button type="submit" variant="accent" size="lg" fullWidth loading={submitting}>
+                {activeTab === 'register' ? 'Create account' : 'Sign in'}
               </Button>
             </form>
-          </motion.div>
-        </div>
 
-        {/* Back to Home */}
-        <div className="mt-6 text-center">
-          <Link to="/" className="inline-flex items-center rounded text-gray-600 transition hover:text-kredent-accent">
-            <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Back to Home
-          </Link>
+            <p className="mt-6 text-center text-caption text-mvj-muted">
+              <Link to="/" className="font-semibold text-mvj-red underline underline-offset-2 hover:text-mvj-navy">
+                Back to home
+              </Link>
+            </p>
+          </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   )
 }

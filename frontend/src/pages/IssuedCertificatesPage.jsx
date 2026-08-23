@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import {
   Alert,
@@ -28,20 +27,13 @@ import {
 import { issueCredentialOnChain, revokeCredentialOnChain, onAccountsChanged } from '../services/blockchainService'
 import { listDepartments, getDepartmentSummary } from '../services/departmentService'
 import { BLOCK_EXPLORER_URL } from '../contracts/skillChainConfig'
+import { certificateStatusMeta } from '../utils/certificateStatus'
 
 const PAGE_SIZE = 20
 
-// Certificate.status (backend enum) -> how it should read/color in this admin UI.
-const STATUS_META = {
-  PENDING_MINT: { label: 'Pending Mint', variant: 'warning' },
-  MINTED: { label: 'Minted', variant: 'success' },
-  MINT_FAILED: { label: 'Mint Failed', variant: 'danger' },
-  REVOKED: { label: 'Revoked', variant: 'danger' },
-}
-
-function statusMeta(status) {
-  return STATUS_META[status] ?? { label: status, variant: 'neutral' }
-}
+// Status presentation now lives in utils/certificateStatus so the admin and
+// student views of the same record can never drift apart.
+const statusMeta = certificateStatusMeta
 
 // Reasonable graduation-year filter options — not stored data, just the range of years the year
 // picker offers; actual filtering only ever matches real certificate.yearOfCompletion values.
@@ -352,9 +344,13 @@ export function IssuedCertificatesPage() {
   const departmentLabel = (code) => departments.find((d) => d.code === code)?.label ?? code
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-14 sm:py-16">
+    <section className="min-h-screen bg-surface-page py-14 sm:py-16">
       <div className="mx-auto max-w-[1200px] px-5 lg:px-10">
-        <PageHeader title="Certificate Registry" subtitle="Manage and monitor issued degree certificates by department" />
+        <PageHeader
+          eyebrow="Administration"
+          title="Certificate registry"
+          subtitle="Issued degree certificates, by department."
+        />
 
         {loadError && (
           <Alert variant="error" title="Could not load certificates" className="mb-6">
@@ -372,10 +368,10 @@ export function IssuedCertificatesPage() {
           <button
             type="button"
             onClick={() => selectDepartment('')}
-            className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+            className={`rounded-md border px-4 py-2.5 text-caption font-medium transition ${
               selectedDepartment === ''
                 ? 'border-kredent-navy bg-kredent-navy text-white'
-                : 'border-gray-300 bg-white text-gray-700 hover:border-kredent-navy/50'
+                : 'border-surface-line bg-surface-raised text-mvj-muted hover:border-kredent-navy/50'
             }`}
           >
             All Departments
@@ -385,10 +381,10 @@ export function IssuedCertificatesPage() {
               key={dept.code}
               type="button"
               onClick={() => selectDepartment(dept.code)}
-              className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+              className={`rounded-md border px-4 py-2.5 text-caption font-medium transition ${
                 selectedDepartment === dept.code
                   ? 'border-kredent-accent bg-kredent-accent text-white'
-                  : 'border-gray-300 bg-white text-gray-700 hover:border-kredent-accent/50'
+                  : 'border-surface-line bg-surface-raised text-mvj-muted hover:border-kredent-accent/50'
               }`}
             >
               {dept.code}
@@ -405,19 +401,19 @@ export function IssuedCertificatesPage() {
               </Alert>
             )}
             <div className="mb-3 flex items-baseline gap-2">
-              <h2 className="font-serif text-xl font-bold text-kredent-navy">{departmentLabel(selectedDepartment)}</h2>
-              <span className="text-sm text-gray-500">({selectedDepartment})</span>
+              <h2 className="text-h3 font-bold text-mvj-navy">{departmentLabel(selectedDepartment)}</h2>
+              <span className="text-caption text-mvj-muted">({selectedDepartment})</span>
             </div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
               {!deptSummary ? (
                 Array.from({ length: 5 }).map((_, i) => <SkeletonStatCard key={i} />)
               ) : (
                 <>
-                  <StatCard label="Total Students" value={deptSummary.totalStudents} iconBgClassName="bg-blue-100 text-blue-600" icon={<UsersIcon />} />
-                  <StatCard label="Certificates Issued" value={deptSummary.totalCertificates} iconBgClassName="bg-indigo-100 text-indigo-600" icon={<DocIcon />} delay={0.05} />
-                  <StatCard label="Pending" value={deptSummary.pendingMint} valueClassName="text-amber-600" iconBgClassName="bg-amber-100 text-amber-600" icon={<ClockIcon />} delay={0.1} />
-                  <StatCard label="Minted" value={deptSummary.minted} valueClassName="text-green-600" iconBgClassName="bg-green-100 text-green-600" icon={<CheckIcon />} delay={0.15} />
-                  <StatCard label="Revoked" value={deptSummary.revoked} valueClassName="text-red-600" iconBgClassName="bg-red-100 text-red-600" icon={<XIcon />} delay={0.2} />
+                  <StatCard label="Total Students" value={deptSummary.totalStudents} />
+                  <StatCard label="Certificates Issued" value={deptSummary.totalCertificates} />
+                  <StatCard label="Pending" value={deptSummary.pendingMint} valueClassName="text-mvj-orange" />
+                  <StatCard label="Minted" value={deptSummary.minted} />
+                  <StatCard label="Revoked" value={deptSummary.revoked} valueClassName="text-mvj-red" />
                 </>
               )}
             </div>
@@ -425,26 +421,16 @@ export function IssuedCertificatesPage() {
         )}
 
         {/* Main Table Card */}
-        <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
+        <div>
           <Card>
             <CardHeader
               title="Certificate Records"
               subtitle={loading ? 'Loading…' : `${pageInfo.totalElements} certificate${pageInfo.totalElements === 1 ? '' : 's'}`}
-              icon={
-                <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v1a1 1 0 001 1h4a1 1 0 001-1v-1m3-2V8a2 2 0 00-2-2H8a2 2 0 00-2 2v8m5-4h4" />
-                </svg>
-              }
               action={
                 <Button
                   variant="accent"
                   size="sm"
                   onClick={() => navigate('/admin/issue-degree')}
-                  icon={
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                  }
                 >
                   Issue New
                 </Button>
@@ -452,7 +438,7 @@ export function IssuedCertificatesPage() {
             />
 
             {/* Search and Filter */}
-            <div className="border-b border-gray-200 p-6">
+            <div className="border-b border-surface-line p-6">
               <form onSubmit={onSearchSubmit} className="flex flex-col gap-4 lg:flex-row">
                 <div className="flex-1">
                   <Input
@@ -486,17 +472,17 @@ export function IssuedCertificatesPage() {
             {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="border-b border-gray-200 bg-gray-50">
+                <thead className="border-b border-surface-line bg-surface-sunken">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Student</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">USN</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Department</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Year</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Status</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Actions</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Student</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">USN</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Department</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Year</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Status</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-surface-line">
                   {loading ? (
                     Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} columns={6} />)
                   ) : certificates.length === 0 ? (
@@ -505,51 +491,43 @@ export function IssuedCertificatesPage() {
                         <EmptyState
                           title="No certificates found"
                           description="Try a different search term, department, year, or status filter."
-                          icon={
-                            <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                          }
                         />
                       </td>
                     </tr>
                   ) : (
-                    certificates.map((cert, idx) => (
-                      <motion.tr
+                    certificates.map((cert) => (
+                      <tr
                         key={cert.id}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.25, delay: idx * 0.03 }}
-                        className="transition-colors hover:bg-gray-50"
+                        className="transition-colors hover:bg-surface-sunken"
                       >
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-5">
                           <div>
-                            <p className="font-semibold text-gray-900">{cert.studentName}</p>
-                            <p className="text-sm text-gray-500">{cert.degreeName}</p>
+                            <p className="font-semibold text-mvj-ink">{cert.studentName}</p>
+                            <p className="text-caption text-mvj-muted/75">{cert.degreeName}</p>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <code className="rounded bg-gray-100 px-2 py-1 font-mono text-sm text-gray-700">{cert.studentUsn}</code>
+                        <td className="px-6 py-5">
+                          <code className="rounded bg-surface-sunken px-2 py-1 font-mono text-caption text-mvj-muted">{cert.studentUsn}</code>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-5">
                           <Badge variant="info">{cert.department}</Badge>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-700">{cert.yearOfCompletion}</td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-5 text-caption text-mvj-muted">{cert.yearOfCompletion}</td>
+                        <td className="px-6 py-5">
                           <Badge variant={statusMeta(cert.status).variant}>{statusMeta(cert.status).label}</Badge>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-5">
                           <div className="flex items-center space-x-3">
                             <button
                               onClick={() => handleViewCertificate(cert)}
-                              className="rounded text-sm font-medium text-blue-600 transition-colors hover:text-blue-800"
+                              className="rounded text-caption font-medium text-blue-600 transition-colors hover:text-blue-800"
                             >
                               View
                             </button>
                             {cert.fileAvailable && (
                               <button
                                 onClick={() => handleDownload(cert)}
-                                className="rounded text-sm font-medium text-gray-700 transition-colors hover:text-gray-900"
+                                className="rounded text-caption font-medium text-mvj-muted transition-colors hover:text-mvj-ink"
                               >
                                 Download
                               </button>
@@ -558,7 +536,7 @@ export function IssuedCertificatesPage() {
                               <button
                                 onClick={() => handleIssueOnBlockchain(cert)}
                                 disabled={blockchainBusyId === cert.id}
-                                className="rounded text-sm font-medium text-kredent-accent transition-colors hover:text-orange-700 disabled:opacity-50"
+                                className="rounded text-caption font-medium text-kredent-accent transition-colors hover:text-orange-700 disabled:opacity-50"
                               >
                                 {blockchainBusyId === cert.id ? 'Issuing…' : 'Issue on Blockchain'}
                               </button>
@@ -567,14 +545,14 @@ export function IssuedCertificatesPage() {
                               <button
                                 onClick={() => handleRevoke(cert)}
                                 disabled={blockchainBusyId === cert.id}
-                                className="rounded text-sm font-medium text-red-600 transition-colors hover:text-red-800 disabled:opacity-50"
+                                className="rounded text-caption font-medium text-red-600 transition-colors hover:text-red-800 disabled:opacity-50"
                               >
                                 {blockchainBusyId === cert.id ? 'Revoking…' : 'Revoke'}
                               </button>
                             )}
                           </div>
                         </td>
-                      </motion.tr>
+                      </tr>
                     ))
                   )}
                 </tbody>
@@ -591,62 +569,62 @@ export function IssuedCertificatesPage() {
               />
             )}
           </Card>
-        </motion.div>
+        </div>
 
         {/* Certificate Detail Modal */}
         <Modal open={Boolean(selectedCertificate)} onClose={() => setSelectedCertificate(null)} title="Certificate Details">
           {selectedCertificate && (
-            <div className="space-y-4 p-6">
+            <div className="space-y-6 p-6">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <p className="text-sm text-gray-600">Student Name</p>
-                  <p className="font-semibold text-gray-900">{selectedCertificate.studentName}</p>
+                  <p className="text-caption text-mvj-muted">Student Name</p>
+                  <p className="font-semibold text-mvj-ink">{selectedCertificate.studentName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">USN</p>
-                  <p className="font-mono text-sm text-gray-900">{selectedCertificate.studentUsn}</p>
+                  <p className="text-caption text-mvj-muted">USN</p>
+                  <p className="font-mono text-caption text-mvj-ink">{selectedCertificate.studentUsn}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Certificate Number</p>
-                  <p className="font-mono text-sm text-gray-900">{selectedCertificate.certificateNumber}</p>
+                  <p className="text-caption text-mvj-muted">Certificate Number</p>
+                  <p className="font-mono text-caption text-mvj-ink">{selectedCertificate.certificateNumber}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Degree</p>
-                  <p className="font-semibold text-gray-900">{selectedCertificate.degreeName}</p>
+                  <p className="text-caption text-mvj-muted">Degree</p>
+                  <p className="font-semibold text-mvj-ink">{selectedCertificate.degreeName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Department</p>
-                  <p className="font-semibold text-gray-900">{selectedCertificate.department}</p>
+                  <p className="text-caption text-mvj-muted">Department</p>
+                  <p className="font-semibold text-mvj-ink">{selectedCertificate.department}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Year of Completion</p>
-                  <p className="font-semibold text-gray-900">{selectedCertificate.yearOfCompletion}</p>
+                  <p className="text-caption text-mvj-muted">Year of Completion</p>
+                  <p className="font-semibold text-mvj-ink">{selectedCertificate.yearOfCompletion}</p>
                 </div>
                 <div>
-                  <p className="mb-1 text-sm text-gray-600">Status</p>
+                  <p className="mb-1 text-caption text-mvj-muted">Status</p>
                   <Badge variant={statusMeta(selectedCertificate.status).variant}>
                     {statusMeta(selectedCertificate.status).label}
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Issued Date</p>
-                  <p className="font-semibold text-gray-900">{selectedCertificate.issuedAt?.slice(0, 10)}</p>
+                  <p className="text-caption text-mvj-muted">Issued Date</p>
+                  <p className="font-semibold text-mvj-ink">{selectedCertificate.issuedAt?.slice(0, 10)}</p>
                 </div>
                 {selectedCertificate.revokedReason && (
                   <div className="md:col-span-2">
-                    <p className="text-sm text-gray-600">Revoked Reason</p>
-                    <p className="font-semibold text-gray-900">{selectedCertificate.revokedReason}</p>
+                    <p className="text-caption text-mvj-muted">Revoked Reason</p>
+                    <p className="font-semibold text-mvj-ink">{selectedCertificate.revokedReason}</p>
                   </div>
                 )}
                 <div className="md:col-span-2">
-                  <p className="mb-1 text-sm text-gray-600">SHA-256 File Hash</p>
+                  <p className="mb-1 text-caption text-mvj-muted">SHA-256 File Hash</p>
                   {selectedCertificate.fileHash ? (
-                    <div className="flex items-start justify-between gap-2 rounded bg-gray-100 p-2">
-                      <p className="break-all font-mono text-xs text-gray-900">{selectedCertificate.fileHash}</p>
+                    <div className="flex items-start justify-between gap-2 rounded bg-surface-sunken p-2">
+                      <p className="break-all font-mono text-micro text-mvj-ink">{selectedCertificate.fileHash}</p>
                       <CopyButton value={selectedCertificate.fileHash} label="SHA-256 hash" />
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-500 italic">No file uploaded yet</p>
+                    <p className="text-caption text-mvj-muted/75 italic">No file uploaded yet</p>
                   )}
                 </div>
                 {selectedCertificate.fileAvailable && (
@@ -658,13 +636,13 @@ export function IssuedCertificatesPage() {
                 )}
 
                 {/* Blockchain section (Phase 3) */}
-                <div className="border-t border-gray-200 pt-4 md:col-span-2">
-                  <p className="mb-2 text-sm font-semibold text-gray-700">Blockchain</p>
+                <div className="border-t border-surface-line pt-4 md:col-span-2">
+                  <p className="mb-2 text-caption font-semibold text-mvj-muted">Blockchain</p>
 
                   {selectedCertificate.status === 'MINTED' || selectedCertificate.status === 'REVOKED' ? (
-                    <div className="space-y-3 rounded-lg bg-gray-50 p-4 text-sm">
+                    <div className="space-y-3 rounded-lg bg-surface-sunken p-4 text-caption">
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Blockchain Status:</span>
+                        <span className="text-mvj-muted">Blockchain Status:</span>
                         <span
                           className={`inline-flex items-center gap-1.5 font-semibold ${
                             selectedCertificate.status === 'REVOKED' ? 'text-red-600' : 'text-green-600'
@@ -679,13 +657,13 @@ export function IssuedCertificatesPage() {
                         </span>
                       </div>
                       <div>
-                        <span className="mb-1 block text-gray-600">Transaction Hash:</span>
+                        <span className="mb-1 block text-mvj-muted">Transaction Hash:</span>
                         <div className="flex items-start justify-between gap-2">
                           <a
                             href={`${BLOCK_EXPLORER_URL}/tx/${selectedCertificate.txHash}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="break-all font-mono text-xs text-blue-600 hover:underline"
+                            className="break-all font-mono text-micro text-blue-600 hover:underline"
                           >
                             {selectedCertificate.txHash}
                           </a>
@@ -693,24 +671,24 @@ export function IssuedCertificatesPage() {
                         </div>
                       </div>
                       <div>
-                        <span className="mb-1 block text-gray-600">Token / Credential ID:</span>
-                        <span className="font-mono text-xs text-gray-900">{selectedCertificate.tokenId}</span>
+                        <span className="mb-1 block text-mvj-muted">Token / Credential ID:</span>
+                        <span className="font-mono text-micro text-mvj-ink">{selectedCertificate.tokenId}</span>
                       </div>
                       <div>
-                        <span className="mb-1 block text-gray-600">Student Wallet:</span>
+                        <span className="mb-1 block text-mvj-muted">Student Wallet:</span>
                         <div className="flex items-start justify-between gap-2">
-                          <span className="break-all font-mono text-xs text-gray-900">{selectedCertificate.walletAddress}</span>
+                          <span className="break-all font-mono text-micro text-mvj-ink">{selectedCertificate.walletAddress}</span>
                           <CopyButton value={selectedCertificate.walletAddress} label="student wallet address" />
                         </div>
                       </div>
                       <div>
-                        <span className="mb-1 block text-gray-600">Contract:</span>
+                        <span className="mb-1 block text-mvj-muted">Contract:</span>
                         <div className="flex items-start justify-between gap-2">
                           <a
                             href={`${BLOCK_EXPLORER_URL}/address/${selectedCertificate.contractAddress}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="break-all font-mono text-xs text-blue-600 hover:underline"
+                            className="break-all font-mono text-micro text-blue-600 hover:underline"
                           >
                             {selectedCertificate.contractAddress}
                           </a>
@@ -719,10 +697,10 @@ export function IssuedCertificatesPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="rounded-lg bg-gray-50 p-4 text-sm">
-                      <p className="mb-3 text-gray-600">
+                    <div className="rounded-lg bg-surface-sunken p-4 text-caption">
+                      <p className="mb-3 text-mvj-muted">
                         Not yet issued on-chain. Student's system-managed wallet:{' '}
-                        <span className="font-mono text-xs text-gray-900">
+                        <span className="font-mono text-micro text-mvj-ink">
                           {selectedCertificate.studentWalletAddress || 'none on file'}
                         </span>
                       </p>
@@ -736,7 +714,7 @@ export function IssuedCertificatesPage() {
                           Issue on Blockchain
                         </Button>
                       ) : (
-                        <p className="text-xs italic text-gray-500">Upload the certificate PDF before issuing on the blockchain.</p>
+                        <p className="text-micro italic text-mvj-muted/75">Upload the certificate PDF before issuing on the blockchain.</p>
                       )}
                     </div>
                   )}
@@ -750,16 +728,16 @@ export function IssuedCertificatesPage() {
             minted on-chain but its transaction hash couldn't be recovered automatically. */}
         <Modal open={Boolean(reconcileTarget)} onClose={closeReconcileModal} title="Complete blockchain reconciliation" size="md">
           {reconcileTarget && (
-            <div className="space-y-4 p-6">
-              <p className="text-sm text-gray-700">{reconcileTarget.message}</p>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="space-y-6 p-6">
+              <p className="text-caption text-mvj-muted">{reconcileTarget.message}</p>
+              <div className="grid grid-cols-2 gap-4 text-caption">
                 <div>
-                  <p className="text-gray-600">Token ID</p>
-                  <p className="font-mono font-semibold text-gray-900">{reconcileTarget.tokenId}</p>
+                  <p className="text-mvj-muted">Token ID</p>
+                  <p className="font-mono font-semibold text-mvj-ink">{reconcileTarget.tokenId}</p>
                 </div>
                 <div>
-                  <p className="text-gray-600">Contract</p>
-                  <p className="break-all font-mono text-xs text-gray-900">{reconcileTarget.contractAddress}</p>
+                  <p className="text-mvj-muted">Contract</p>
+                  <p className="break-all font-mono text-micro text-mvj-ink">{reconcileTarget.contractAddress}</p>
                 </div>
               </div>
               <Input
@@ -787,42 +765,3 @@ export function IssuedCertificatesPage() {
   )
 }
 
-function UsersIcon() {
-  return (
-    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-    </svg>
-  )
-}
-
-function DocIcon() {
-  return (
-    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-    </svg>
-  )
-}
-
-function ClockIcon() {
-  return (
-    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  )
-}
-
-function CheckIcon() {
-  return (
-    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  )
-}
-
-function XIcon() {
-  return (
-    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  )
-}

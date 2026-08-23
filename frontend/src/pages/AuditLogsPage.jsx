@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
 import {
   Alert,
   Badge,
@@ -138,9 +137,13 @@ export function AuditLogsPage() {
   }
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-14 sm:py-16">
+    <section className="min-h-screen bg-surface-page py-14 sm:py-16">
       <div className="mx-auto max-w-[1200px] px-5 lg:px-10">
-        <PageHeader title="Audit Logs" subtitle="Read-only system activity log — certificate issuance, revocation, uploads, and blockchain events" />
+        <PageHeader
+          eyebrow="Administration"
+          title="Audit log"
+          subtitle="Read-only record of certificate issuance, revocation, uploads and blockchain events."
+        />
 
         {loadError && (
           <Alert variant="error" title="Could not load audit logs" className="mb-6">
@@ -148,20 +151,15 @@ export function AuditLogsPage() {
           </Alert>
         )}
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <div>
           <Card>
           <CardHeader
             title="Activity Log"
             subtitle={loading ? 'Loading…' : `${pageInfo.totalElements} entr${pageInfo.totalElements === 1 ? 'y' : 'ies'}`}
-            icon={
-              <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h3m-7 5h10a2 2 0 002-2V7a2 2 0 00-2-2h-2.586a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 0011.586 3H8a2 2 0 00-2 2v13a2 2 0 002 2z" />
-              </svg>
-            }
           />
 
           {/* Search and Filter */}
-          <div className="border-b border-gray-200 p-6">
+          <div className="border-b border-surface-line p-6">
             <form onSubmit={onSearchSubmit} className="flex flex-col gap-4 lg:flex-row">
               <div className="flex-1">
                 <Input
@@ -196,19 +194,19 @@ export function AuditLogsPage() {
           {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="border-b border-gray-200 bg-gray-50">
+              <thead className="border-b border-surface-line bg-surface-sunken">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Date / Time</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Action</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Certificate</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Student</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Department</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Performed By</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Tx Hash</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Details</th>
+                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Date / Time</th>
+                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Action</th>
+                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Certificate</th>
+                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Student</th>
+                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Department</th>
+                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Performed By</th>
+                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Tx Hash</th>
+                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Details</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-surface-line">
                 {loading ? (
                   Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} columns={8} />)
                 ) : logs.length === 0 ? (
@@ -217,75 +215,67 @@ export function AuditLogsPage() {
                       <EmptyState
                         title="No audit log entries found"
                         description="Try a different search term, action, or department filter."
-                        icon={
-                          <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                          </svg>
-                        }
                       />
                     </td>
                   </tr>
                 ) : (
-                  logs.map((entry, idx) => (
-                    <motion.tr
+                  logs.map((entry) => (
+                    <tr
                       key={entry.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.25, delay: Math.min(idx * 0.02, 0.3) }}
-                      className="transition-colors hover:bg-gray-50"
+                      className="transition-colors hover:bg-surface-sunken"
                     >
-                      <td className="px-6 py-4 text-sm text-gray-700">{formatDateTime(entry.createdAt)}</td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5 text-caption text-mvj-muted">{formatDateTime(entry.createdAt)}</td>
+                      <td className="px-6 py-5">
                         <Badge variant={actionMeta(entry.action).variant}>{actionMeta(entry.action).label}</Badge>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         {entry.certificateNumber ? (
-                          <code className="rounded bg-gray-100 px-2 py-1 font-mono text-xs text-gray-700">
+                          <code className="rounded bg-surface-sunken px-2 py-1 font-mono text-micro text-mvj-muted">
                             {entry.certificateNumber}
                           </code>
                         ) : (
-                          <span className="text-sm text-gray-400">—</span>
+                          <span className="text-caption text-mvj-muted/75">—</span>
                         )}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         {entry.studentName || entry.studentUsn ? (
                           <div>
-                            {entry.studentName && <p className="text-sm font-medium text-gray-900">{entry.studentName}</p>}
-                            {entry.studentUsn && <p className="text-xs text-gray-500">{entry.studentUsn}</p>}
+                            {entry.studentName && <p className="text-caption font-medium text-mvj-ink">{entry.studentName}</p>}
+                            {entry.studentUsn && <p className="text-micro text-mvj-muted/75">{entry.studentUsn}</p>}
                           </div>
                         ) : (
-                          <span className="text-sm text-gray-400">—</span>
+                          <span className="text-caption text-mvj-muted/75">—</span>
                         )}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         {entry.department ? (
                           <Badge variant="info">{entry.department}</Badge>
                         ) : (
-                          <span className="text-sm text-gray-400">—</span>
+                          <span className="text-caption text-mvj-muted/75">—</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">
+                      <td className="px-6 py-5 text-caption text-mvj-muted">
                         {entry.actorName || '—'}
-                        {entry.actorType && <span className="ml-1.5 text-xs text-gray-400">({entry.actorType})</span>}
+                        {entry.actorType && <span className="ml-1.5 text-micro text-mvj-muted/75">({entry.actorType})</span>}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         {entry.transactionHash ? (
-                          <code className="rounded bg-gray-100 px-2 py-1 font-mono text-xs text-gray-700" title={entry.transactionHash}>
+                          <code className="rounded bg-surface-sunken px-2 py-1 font-mono text-micro text-mvj-muted" title={entry.transactionHash}>
                             {truncateHash(entry.transactionHash)}
                           </code>
                         ) : (
-                          <span className="text-sm text-gray-400">—</span>
+                          <span className="text-caption text-mvj-muted/75">—</span>
                         )}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         <button
                           onClick={() => setSelectedLog(entry)}
-                          className="rounded text-sm font-medium text-blue-600 transition-colors hover:text-blue-800"
+                          className="rounded text-caption font-medium text-blue-600 transition-colors hover:text-blue-800"
                         >
                           View
                         </button>
                       </td>
-                    </motion.tr>
+                    </tr>
                   ))
                 )}
               </tbody>
@@ -302,63 +292,63 @@ export function AuditLogsPage() {
             />
           )}
         </Card>
-      </motion.div>
+      </div>
 
       {/* Entry Detail Modal */}
       <Modal open={Boolean(selectedLog)} onClose={() => setSelectedLog(null)} title="Audit Log Entry">
         {selectedLog && (
-          <div className="space-y-4 p-6">
+          <div className="space-y-6 p-6">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <p className="text-sm text-gray-600">Date / Time</p>
-                <p className="font-semibold text-gray-900">{formatDateTime(selectedLog.createdAt)}</p>
+                <p className="text-caption text-mvj-muted">Date / Time</p>
+                <p className="font-semibold text-mvj-ink">{formatDateTime(selectedLog.createdAt)}</p>
               </div>
               <div>
-                <p className="mb-1 text-sm text-gray-600">Action</p>
+                <p className="mb-1 text-caption text-mvj-muted">Action</p>
                 <Badge variant={actionMeta(selectedLog.action).variant}>{actionMeta(selectedLog.action).label}</Badge>
               </div>
               {selectedLog.certificateNumber && (
                 <div>
-                  <p className="text-sm text-gray-600">Certificate Number</p>
-                  <p className="font-mono text-sm text-gray-900">{selectedLog.certificateNumber}</p>
+                  <p className="text-caption text-mvj-muted">Certificate Number</p>
+                  <p className="font-mono text-caption text-mvj-ink">{selectedLog.certificateNumber}</p>
                 </div>
               )}
               {(selectedLog.studentName || selectedLog.studentUsn) && (
                 <div>
-                  <p className="text-sm text-gray-600">Student</p>
-                  <p className="font-semibold text-gray-900">
+                  <p className="text-caption text-mvj-muted">Student</p>
+                  <p className="font-semibold text-mvj-ink">
                     {selectedLog.studentName} {selectedLog.studentUsn && `(${selectedLog.studentUsn})`}
                   </p>
                 </div>
               )}
               {selectedLog.department && (
                 <div>
-                  <p className="text-sm text-gray-600">Department</p>
-                  <p className="font-semibold text-gray-900">{selectedLog.department}</p>
+                  <p className="text-caption text-mvj-muted">Department</p>
+                  <p className="font-semibold text-mvj-ink">{selectedLog.department}</p>
                 </div>
               )}
               <div>
-                <p className="text-sm text-gray-600">Performed By</p>
-                <p className="font-semibold text-gray-900">
-                  {selectedLog.actorName || '—'} <span className="text-sm font-normal text-gray-500">({selectedLog.actorType})</span>
+                <p className="text-caption text-mvj-muted">Performed By</p>
+                <p className="font-semibold text-mvj-ink">
+                  {selectedLog.actorName || '—'} <span className="text-caption font-normal text-mvj-muted/75">({selectedLog.actorType})</span>
                 </p>
               </div>
               {selectedLog.transactionHash && (
                 <div className="md:col-span-2">
-                  <p className="mb-1 text-sm text-gray-600">Transaction Hash</p>
-                  <p className="break-all rounded bg-gray-100 p-2 font-mono text-xs text-gray-900">{selectedLog.transactionHash}</p>
+                  <p className="mb-1 text-caption text-mvj-muted">Transaction Hash</p>
+                  <p className="break-all rounded bg-surface-sunken p-2 font-mono text-micro text-mvj-ink">{selectedLog.transactionHash}</p>
                 </div>
               )}
             </div>
 
             {selectedLog.details && Object.keys(selectedLog.details).length > 0 && (
               <div>
-                <p className="mb-2 text-sm font-semibold text-gray-700">Details</p>
-                <div className="space-y-1.5 rounded-lg bg-gray-50 p-4">
+                <p className="mb-2 text-caption font-semibold text-mvj-muted">Details</p>
+                <div className="space-y-1.5 rounded-lg bg-surface-sunken p-4">
                   {Object.entries(selectedLog.details).map(([key, value]) => (
-                    <div key={key} className="flex flex-wrap justify-between gap-2 text-sm">
-                      <span className="text-gray-500">{key}</span>
-                      <span className="break-all text-right font-mono text-xs text-gray-800">{String(value)}</span>
+                    <div key={key} className="flex flex-wrap justify-between gap-2 text-caption">
+                      <span className="text-mvj-muted/75">{key}</span>
+                      <span className="break-all text-right font-mono text-micro text-mvj-ink">{String(value)}</span>
                     </div>
                   ))}
                 </div>

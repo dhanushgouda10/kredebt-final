@@ -1,5 +1,5 @@
 export function Skeleton({ className = '' }) {
-  return <div className={`relative overflow-hidden rounded-md bg-gray-200/80 skeleton-shimmer ${className}`} />
+  return <div className={`relative overflow-hidden rounded-md bg-surface-sunken/80 skeleton-shimmer ${className}`} />
 }
 
 /** A few lines of skeleton text, e.g. while a result is loading. */
@@ -29,7 +29,7 @@ export function SkeletonRow({ columns = 4 }) {
 /** Skeleton placeholder shaped like a StatCard, for loading dashboard stats. */
 export function SkeletonStatCard() {
   return (
-    <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-[var(--shadow-card)]">
+    <div className="rounded-lg border border-surface-line bg-surface-raised px-6 py-5">
       <div className="flex items-center justify-between">
         <div className="space-y-2">
           <Skeleton className="h-3 w-24" />

@@ -45,9 +45,13 @@ export function StudentProfilePage() {
   }
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-14 sm:py-16">
+    <section className="min-h-screen bg-surface-page py-14 sm:py-16">
       <div className="mx-auto max-w-2xl px-5 lg:px-10">
-        <PageHeader title="Profile" subtitle="Your account details on Kredent" />
+        <PageHeader
+          eyebrow="Student portal"
+          title="Profile"
+          subtitle="Your account details on Kredent."
+        />
 
         {loadError && (
           <Alert variant="error" title="Could not load profile" className="mb-6">
@@ -63,28 +67,28 @@ export function StudentProfilePage() {
           <Card>
             <CardHeader title="Account Information" />
             <div className="space-y-6 p-6">
-              <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 text-caption sm:grid-cols-2">
                 <div>
-                  <p className="text-gray-600">USN</p>
-                  <p className="font-mono font-semibold text-gray-900">{profile.usn}</p>
+                  <p className="text-mvj-muted">USN</p>
+                  <p className="font-mono font-semibold text-mvj-ink">{profile.usn}</p>
                 </div>
                 <div>
-                  <p className="text-gray-600">Email</p>
-                  <p className="font-semibold text-gray-900">{profile.email}</p>
+                  <p className="text-mvj-muted">Email</p>
+                  <p className="font-semibold text-mvj-ink">{profile.email}</p>
                 </div>
                 <div>
-                  <p className="text-gray-600">Department</p>
-                  <p className="font-semibold text-gray-900">{profile.department}</p>
+                  <p className="text-mvj-muted">Department</p>
+                  <p className="font-semibold text-mvj-ink">{profile.department}</p>
                 </div>
                 <div>
-                  <p className="text-gray-600">System-managed wallet</p>
-                  <p className="break-all font-mono text-xs text-gray-900">
+                  <p className="text-mvj-muted">System-managed wallet</p>
+                  <p className="break-all font-mono text-micro text-mvj-ink">
                     {profile.walletAddress || 'Not yet generated'}
                   </p>
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4 border-t border-gray-100 pt-6">
+              <form onSubmit={handleSubmit} className="space-y-4 border-t border-surface-line pt-6">
                 <Input label="Full name" name="fullName" required value={form.fullName} onChange={handleChange} />
                 <Input label="Phone" name="phone" required value={form.phone} onChange={handleChange} />
 

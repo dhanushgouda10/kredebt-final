@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { Alert, Badge, Button, Card, CardHeader, Input, PageHeader, Select } from '../components/ui'
 import { createCertificate, uploadCertificateFile } from '../services/certificateService'
@@ -161,21 +160,20 @@ export function IssueDegreePage() {
   }
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-14 sm:py-16">
+    <section className="min-h-screen bg-surface-page py-14 sm:py-16">
       <div className="mx-auto max-w-[1200px] px-5 lg:px-10">
-        <PageHeader title="Issue Degree" subtitle="Create a certificate record and attach the signed PDF" />
+        <PageHeader
+          eyebrow="Administration"
+          title="Issue a degree"
+          subtitle="Create the certificate record and attach the signed PDF."
+        />
 
         <div className="mx-auto max-w-4xl">
-          <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15 }}>
+          <div>
             <Card>
               <CardHeader
                 title="Issue Degree Credential"
                 subtitle="Select the student, enter degree details, and upload the certificate PDF"
-                icon={
-                  <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                }
               />
 
               <div className="p-6 sm:p-8">
@@ -186,7 +184,7 @@ export function IssueDegreePage() {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-7 md:grid-cols-2">
                     <Select
                       label="Department"
                       name="department"
@@ -231,17 +229,17 @@ export function IssueDegreePage() {
                     </Select>
 
                     <div>
-                      <p className="mb-1.5 text-sm font-medium text-gray-700">Confirmed Department</p>
-                      <div className="flex h-[46px] items-center rounded-lg border border-gray-200 bg-gray-50 px-4">
+                      <p className="mb-1.5 text-caption font-medium text-mvj-muted">Confirmed Department</p>
+                      <div className="flex h-[46px] items-center rounded-lg border border-surface-line bg-surface-sunken px-4">
                         {selectedStudent ? (
                           <Badge variant="info">
                             {selectedStudent.department} — {departmentLabel(selectedStudent.department)}
                           </Badge>
                         ) : (
-                          <span className="text-sm text-gray-400">Select a student to confirm department</span>
+                          <span className="text-caption text-mvj-muted/75">Select a student to confirm department</span>
                         )}
                       </div>
-                      <p className="mt-1.5 text-xs text-gray-500">Always taken from the student's own record — cannot be changed here.</p>
+                      <p className="mt-1.5 text-micro text-mvj-muted/75">Always taken from the student's own record — cannot be changed here.</p>
                     </div>
 
                     <Input
@@ -287,7 +285,7 @@ export function IssueDegreePage() {
                     </Alert>
                   )}
 
-                  <div className="flex flex-col gap-4 border-t border-gray-200 pt-6 sm:flex-row">
+                  <div className="flex flex-col gap-4 border-t border-surface-line pt-6 sm:flex-row">
                     <Button type="submit" variant="primary" size="lg" loading={isIssuing} className="flex-1">
                       {isIssuing ? (
                         'Issuing…'
@@ -309,9 +307,9 @@ export function IssueDegreePage() {
 
                 {/* Success Message */}
                 {issuedCertificate && (
-                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
+                  <div className="mt-6">
                     <Alert variant="success" title="Certificate Record Created">
-                      <div className="mt-2 space-y-3 text-sm">
+                      <div className="mt-2 space-y-3 text-caption">
                         <p className="text-green-700">
                           The certificate for <span className="font-medium">{issuedCertificate.studentName}</span> (
                           {issuedCertificate.studentUsn}) has been created and the signed PDF has been secured — a
@@ -334,11 +332,11 @@ export function IssueDegreePage() {
                         </Button>
                       </div>
                     </Alert>
-                  </motion.div>
+                  </div>
                 )}
               </div>
             </Card>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

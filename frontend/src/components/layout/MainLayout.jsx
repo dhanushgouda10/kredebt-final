@@ -5,7 +5,7 @@ import { ScrollToTopButton } from '../ui/ScrollToTopButton'
 
 export function MainLayout() {
   return (
-    <div className="min-h-screen bg-[#f4f6fb]">
+    <div className="min-h-screen bg-surface-page">
       <Navbar />
       <main>
         <Outlet />

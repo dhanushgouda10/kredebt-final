@@ -1,26 +1,16 @@
-import { Button, BackButton } from '../components/ui'
+import { Button } from '../components/ui'
 
 export function NotFoundPage() {
   return (
-    <section className="flex min-h-[60vh] items-center justify-center bg-white px-5 py-20">
-      <div className="text-center">
-        <p className="mb-3 font-serif text-6xl font-bold text-kredent-navy">404</p>
-        <h1 className="mb-2 text-xl font-semibold text-gray-900">Page not found</h1>
-        <p className="mx-auto mb-8 max-w-sm text-sm text-gray-600">
-          The page you're looking for doesn't exist or may have moved.
-        </p>
-        <div className="flex flex-wrap justify-center gap-3">
-          <Button to="/" variant="primary">
-            Go to Homepage
-          </Button>
-          <Button to="/verify" variant="outline">
-            Verify a Certificate
-          </Button>
-        </div>
-        <div className="mt-6">
-          <BackButton label="Go back" fallbackTo="/" className="mx-auto" />
-        </div>
-      </div>
-    </section>
+    <div className="flex min-h-[60vh] flex-col items-center justify-center bg-surface-page px-5 py-16 text-center">
+      <p className="text-label text-mvj-orange">404</p>
+      <h1 className="text-h2 mt-3 font-bold text-mvj-navy">Page not found</h1>
+      <p className="text-body-l mt-4 max-w-sm text-mvj-muted">
+        The page you requested does not exist or may have moved.
+      </p>
+      <Button to="/" variant="accent" size="lg" className="mt-8">
+        Back to home
+      </Button>
+    </div>
   )
 }
