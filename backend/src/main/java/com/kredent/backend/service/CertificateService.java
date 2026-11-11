@@ -10,6 +10,7 @@ import com.kredent.backend.entity.ActorType;
 import com.kredent.backend.entity.Admin;
 import com.kredent.backend.entity.Certificate;
 import com.kredent.backend.entity.CertificateStatus;
+import com.kredent.backend.entity.Institution;
 import com.kredent.backend.entity.Student;
 import com.kredent.backend.repository.CertificateRepository;
 import com.kredent.backend.repository.StudentRepository;
@@ -49,6 +50,7 @@ public class CertificateService {
     private final SupabaseStorageService storageService;
     private final BlockchainVerificationService blockchainVerificationService;
     private final PdfStampingService pdfStampingService;
+    private final CertificateRenderer certificateRenderer;
     private final long maxFileSizeBytes;
     private final String frontendBaseUrl;
 
@@ -60,6 +62,7 @@ public class CertificateService {
             SupabaseStorageService storageService,
             BlockchainVerificationService blockchainVerificationService,
             PdfStampingService pdfStampingService,
+            CertificateRenderer certificateRenderer,
             @Value("${app.certificate.max-file-size-mb:5}") long maxFileSizeMb,
             @Value("${app.frontend-base-url}") String frontendBaseUrl) {
         this.certificateRepository = certificateRepository;
@@ -69,12 +72,14 @@ public class CertificateService {
         this.storageService = storageService;
         this.blockchainVerificationService = blockchainVerificationService;
         this.pdfStampingService = pdfStampingService;
+        this.certificateRenderer = certificateRenderer;
         this.maxFileSizeBytes = maxFileSizeMb * 1024 * 1024;
         this.frontendBaseUrl = frontendBaseUrl;
     }
 
     public CertificateResponse createMetadata(CertificateMetadataRequest request) {
-        Student student = studentRepository.findById(request.getStudentId())
+        Institution institution = currentUserService.getCurrentInstitution();
+        Student student = studentRepository.findByIdAndInstitutionId(request.getStudentId(), institution.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
         Admin admin = currentUserService.getCurrentAdmin();
 
@@ -82,6 +87,7 @@ public class CertificateService {
         certificate.setCertificateNumber(generateCertificateNumber(request.getYearOfCompletion()));
         certificate.setStudent(student);
         certificate.setIssuedByAdmin(admin);
+        certificate.setInstitution(institution);
         certificate.setDegreeName(request.getDegreeName());
         // Always the student's own department — never independently chosen — so a certificate
         // can never disagree with the student record it belongs to (see CertificateMetadataRequest).
@@ -110,46 +116,49 @@ public class CertificateService {
 
     public PageResponse<CertificateResponse> getOwnCertificates(Pageable pageable) {
         Student student = currentUserService.getCurrentStudent();
-        Page<Certificate> page = certificateRepository.findByStudentId(student.getId(), pageable);
+        // Students only see certificates that have been issued on the blockchain (or later revoked) —
+        // never drafts the institution is still preparing.
+        Page<Certificate> page = certificateRepository.findByStudentIdAndStatusIn(
+                student.getId(), STUDENT_VISIBLE, pageable);
         return PageResponse.from(page, CertificateResponse::from);
     }
+
+    private static final java.util.Set<CertificateStatus> STUDENT_VISIBLE =
+            java.util.Set.of(CertificateStatus.MINTED, CertificateStatus.REVOKED);
 
     /** Admin registry view — all certificates, optionally filtered by a search term (student name/USN/certificate number). */
+    /** The signed-in institution's certificates, optionally filtered. Never includes another institution's. */
     public PageResponse<CertificateResponse> listAll(String search, Pageable pageable) {
-        Page<Certificate> page = (search == null || search.isBlank())
-                ? certificateRepository.findAll(pageable)
-                : certificateRepository.search(search.trim(), pageable);
-        return PageResponse.from(page, CertificateResponse::from);
+        return listFiltered(null, null, null, search, pageable);
     }
 
-    /**
-     * Department-oriented Certificate Registry view — department, graduation year, and status
-     * are each optional (null means "any"), combined with the same free-text search as listAll()
-     * above. All filtering happens in SQL (CertificateRepository.searchFiltered), so this never
-     * pulls more than one page of rows into memory regardless of how many certificates exist.
-     */
     public PageResponse<CertificateResponse> listFiltered(
             String department, Integer year, CertificateStatus status, String search, Pageable pageable) {
+        Long institutionId = currentUserService.getCurrentInstitution().getId();
         String query = search == null ? "" : search.trim();
-        Page<Certificate> page = certificateRepository.searchFiltered(department, year, status, query, pageable);
+        Page<Certificate> page = certificateRepository.searchFiltered(
+                institutionId,
+                (department == null || department.isBlank()) ? null : department,
+                year, status, query, pageable);
         return PageResponse.from(page, CertificateResponse::from);
     }
 
     public PageResponse<CertificateResponse> getCertificatesForStudent(Long studentId, Pageable pageable) {
-        if (!studentRepository.existsById(studentId)) {
+        Long institutionId = currentUserService.getCurrentInstitution().getId();
+        if (studentRepository.findByIdAndInstitutionId(studentId, institutionId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
         }
-        Page<Certificate> page = certificateRepository.findByStudentId(studentId, pageable);
+        Page<Certificate> page = certificateRepository.findByStudentIdAndInstitutionId(studentId, institutionId, pageable);
         return PageResponse.from(page, CertificateResponse::from);
     }
 
-    /**
-     * Attaches a PDF to an already-created certificate metadata row (see
-     * createMetadata above). Kept as a separate step deliberately — it
-     * doesn't touch the existing metadata-creation flow at all.
-     */
     public CertificateResponse uploadFile(UUID id, MultipartFile file) {
-        Certificate certificate = findOrThrow(id);
+        Certificate certificate = findOwnOrThrow(id);
+        if (certificate.getStatus() == CertificateStatus.MINTED || certificate.getStatus() == CertificateStatus.REVOKED
+                || certificate.getTokenId() != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "This certificate is already recorded on-chain; replacing its PDF would no longer match the on-chain hash");
+        }
         validateFile(file);
 
         byte[] content;
@@ -180,6 +189,92 @@ public class CertificateService {
                     "Could not generate the verification QR code for this certificate", e);
         }
 
+        return storeFinalPdf(certificate, stampedContent, file.getOriginalFilename());
+    }
+
+    /**
+     * Generates the standard Kredent certificate from the student's record (no file upload).
+     * The PDF is drawn server-side with the verification QR already on it, hashed, and stored
+     * exactly like an uploaded one, so the rest of the issuing flow (on-chain mint, verify page,
+     * PDF check) is unchanged.
+     */
+    /** A watermarked sample of the standard certificate for the admin's own college (nothing is saved). */
+    public byte[] previewSample() {
+        Institution institution = currentUserService.getCurrentInstitution();
+        CertificateRenderer.Content content = new CertificateRenderer.Content(
+                institution.getName(), "Student Name", "USN0000", "Bachelor of Engineering",
+                "Department Name", (java.time.Year.now().getValue() - 1) + " - " + java.time.Year.now().getValue(),
+                java.time.LocalDate.now(), "SAMPLE-0000", frontendBaseUrl + "/verify/SAMPLE-0000");
+        return certificateRenderer.render(content, true);
+    }
+
+    public CertificateResponse generateFile(UUID id) {
+        Certificate certificate = findOwnOrThrow(id);
+        if (certificate.getStatus() == CertificateStatus.MINTED || certificate.getStatus() == CertificateStatus.REVOKED
+                || certificate.getTokenId() != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "This certificate is already recorded on-chain; regenerating its PDF would no longer match the on-chain hash");
+        }
+        CertificateRenderer.Content content = contentFor(certificate);
+        byte[] pdf;
+        try {
+            pdf = certificateRenderer.render(content);
+        } catch (RuntimeException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Could not generate the certificate PDF", e);
+        }
+        return storeFinalPdf(certificate, pdf, certificate.getCertificateNumber() + ".pdf");
+    }
+
+    private CertificateRenderer.Content contentFor(Certificate certificate) {
+        Student student = certificate.getStudent();
+        Institution institution = certificate.getInstitution();
+        int year = certificate.getYearOfCompletion();
+        return new CertificateRenderer.Content(
+                institution != null ? institution.getName() : "",
+                student.getFullName(),
+                student.getUsn(),
+                certificate.getDegreeName(),
+                com.kredent.backend.util.DepartmentCatalog.labelFor(certificate.getDepartment()),
+                (year - 1) + " - " + year,
+                certificate.getIssuedAt().toLocalDate(),
+                certificate.getCertificateNumber(),
+                frontendBaseUrl + "/verify/" + certificate.getCertificateNumber());
+    }
+
+    /**
+     * Re-creates a generated certificate's PDF in storage if the stored file was lost. The PDF is
+     * re-rendered from the record and only written back when its SHA-256 matches the hash already
+     * recorded (and minted on-chain) — so a restored file is always exactly the original. If the
+     * hash does not match (for example the file was an uploaded PDF, or was generated before
+     * reproducible rendering), nothing is written and the admin is told why.
+     */
+    public CertificateResponse restoreFile(UUID id) {
+        Certificate certificate = findOwnOrThrow(id);
+        if (certificate.getFileHash() == null || certificate.getStoragePath() == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "This certificate has no stored file to restore");
+        }
+        byte[] pdf;
+        try {
+            pdf = certificateRenderer.render(contentFor(certificate));
+        } catch (RuntimeException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not re-create the certificate PDF", e);
+        }
+        if (!HashUtil.sha256Hex(pdf).equalsIgnoreCase(certificate.getFileHash())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "The original file cannot be re-created exactly (it was uploaded manually or created by an older "
+                            + "version), so it would not match the hash recorded on the blockchain. Revoke this certificate "
+                            + "and issue a new one.");
+        }
+        storageService.upload(certificate.getStoragePath(), pdf, FileValidationUtil.PDF_CONTENT_TYPE);
+        auditLogService.record(ActorType.ADMIN, currentUserService.getCurrentAdmin().getId(),
+                "CERTIFICATE_FILE_RESTORED", "CERTIFICATE", id.toString(),
+                Map.of("fileHash", certificate.getFileHash()));
+        return CertificateResponse.from(certificate);
+    }
+
+    private CertificateResponse storeFinalPdf(Certificate certificate, byte[] stampedContent, String originalFilename) {
+        UUID id = certificate.getId();
         // The hash is computed from the exact stamped bytes that will actually be stored and
         // served — this is the PDF's real fingerprint, independent of where it's stored.
         String fileHash = HashUtil.sha256Hex(stampedContent);
@@ -198,7 +293,7 @@ public class CertificateService {
 
         certificate.setStoragePath(objectPath);
         certificate.setFileUrl(fileUrl);
-        certificate.setOriginalFilename(file.getOriginalFilename());
+        certificate.setOriginalFilename(originalFilename);
         certificate.setFileSizeBytes((long) stampedContent.length);
         certificate.setMimeType(FileValidationUtil.PDF_CONTENT_TYPE);
         certificate.setFileHash(fileHash);
@@ -213,7 +308,7 @@ public class CertificateService {
                 "CERTIFICATE",
                 id.toString(),
                 Map.of(
-                        "originalFilename", String.valueOf(file.getOriginalFilename()),
+                        "originalFilename", String.valueOf(originalFilename),
                         "fileSizeBytes", stampedContent.length,
                         "fileHash", fileHash
                 )
@@ -240,7 +335,11 @@ public class CertificateService {
     }
 
     public void deleteMetadata(UUID id) {
-        Certificate certificate = findOrThrow(id);
+        Certificate certificate = findOwnOrThrow(id);
+        if (certificate.getTokenId() != null || certificate.getStatus() == CertificateStatus.MINTED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "This certificate has an on-chain record and cannot be deleted. Revoke it on-chain instead.");
+        }
         Admin admin = currentUserService.getCurrentAdmin();
 
         boolean hadFile = certificate.getStoragePath() != null;
@@ -279,7 +378,7 @@ public class CertificateService {
     }
 
     public CertificateResponse updateStatus(UUID id, UpdateCertificateStatusRequest request) {
-        Certificate certificate = findOrThrow(id);
+        Certificate certificate = findOwnOrThrow(id);
 
         if (request.getStatus() == CertificateStatus.REVOKED && (request.getReason() == null || request.getReason().isBlank())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A reason is required to revoke a certificate");
@@ -289,6 +388,14 @@ public class CertificateService {
         // below, which actually revokes on-chain first. Certificates that never got minted
         // (still PENDING_MINT / MINT_FAILED) keep working through this endpoint exactly as
         // they did in Phase 2 — nothing changes for that case.
+        if (request.getStatus() == CertificateStatus.MINTED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "A certificate can only become MINTED by issuing it on the blockchain");
+        }
+        if (certificate.getTokenId() != null && certificate.getStatus() != request.getStatus()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "This certificate has an on-chain record; change its state with the blockchain issue / revoke actions");
+        }
         if (request.getStatus() == CertificateStatus.REVOKED && certificate.getStatus() == CertificateStatus.MINTED) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "This certificate is minted on-chain — use the blockchain revoke action so the on-chain record stays in sync");
@@ -333,7 +440,7 @@ public class CertificateService {
      * against data we already had (student wallet, certificate hash), and only then saves it.
      */
     public CertificateResponse issueOnBlockchain(UUID id, IssueBlockchainRequest request) {
-        Certificate certificate = findOrThrow(id);
+        Certificate certificate = findOwnOrThrow(id);
 
         if (certificate.getFileHash() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -359,11 +466,20 @@ public class CertificateService {
                     "The certificate hash used on-chain does not match the stored SHA-256 hash");
         }
 
-        blockchainVerificationService.verifyContractTransaction(request.getTransactionHash());
+        Institution institution = currentUserService.getCurrentInstitution();
+        certificateRepository.findByTokenId(request.getTokenId()).ifPresent(existing -> {
+            if (!existing.getId().equals(id)) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "That on-chain token is already linked to certificate " + existing.getCertificateNumber());
+            }
+        });
+        blockchainVerificationService.verifyContractTransaction(request.getTransactionHash(), institution.getWalletAddress());
+        blockchainVerificationService.verifyIssuedCredential(
+                request.getTokenId(), certificate.getId().toString(), certificate.getFileHash(), studentWallet);
 
         certificate.setWalletAddress(studentWallet.toLowerCase());
         certificate.setTokenId(request.getTokenId());
-        certificate.setContractAddress(request.getContractAddress());
+        certificate.setContractAddress(blockchainVerificationService.contractAddress());
         certificate.setTxHash(request.getTransactionHash());
         certificate.setStatus(CertificateStatus.MINTED);
         certificate.setMintedAt(LocalDateTime.now());
@@ -393,7 +509,7 @@ public class CertificateService {
      * updateStatus() path above, unchanged from Phase 2.
      */
     public CertificateResponse revokeOnBlockchain(UUID id, RevokeBlockchainRequest request) {
-        Certificate certificate = findOrThrow(id);
+        Certificate certificate = findOwnOrThrow(id);
 
         if (certificate.getStatus() != CertificateStatus.MINTED) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
@@ -403,7 +519,9 @@ public class CertificateService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Token ID does not match this certificate's on-chain record");
         }
 
-        blockchainVerificationService.verifyContractTransaction(request.getTransactionHash());
+        blockchainVerificationService.verifyContractTransaction(
+                request.getTransactionHash(), currentUserService.getCurrentInstitution().getWalletAddress());
+        blockchainVerificationService.verifyRevokedOnChain(request.getTokenId());
 
         certificate.setStatus(CertificateStatus.REVOKED);
         certificate.setRevokedAt(LocalDateTime.now());
@@ -427,6 +545,13 @@ public class CertificateService {
         return CertificateResponse.from(certificate);
     }
 
+    /** A certificate issued by the signed-in administrator's institution; anything else is a 404. */
+    private Certificate findOwnOrThrow(UUID id) {
+        Long institutionId = currentUserService.getCurrentInstitution().getId();
+        return certificateRepository.findByIdAndInstitutionId(id, institutionId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Certificate not found"));
+    }
+
     private Certificate findOrThrow(UUID id) {
         return certificateRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Certificate not found"));
@@ -434,12 +559,19 @@ public class CertificateService {
 
     private void assertCanView(Certificate certificate) {
         if (currentUserService.isAdmin()) {
-            return;
+            Institution mine = currentUserService.getCurrentInstitution();
+            if (certificate.getInstitution() != null && certificate.getInstitution().getId().equals(mine.getId())) {
+                return;
+            }
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Certificate not found");
         }
         if (currentUserService.isStudent()) {
             Student student = currentUserService.getCurrentStudent();
             if (certificate.getStudent().getId().equals(student.getId())) {
-                return;
+                if (STUDENT_VISIBLE.contains(certificate.getStatus())) {
+                    return;
+                }
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Certificate not found");
             }
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access to this certificate");

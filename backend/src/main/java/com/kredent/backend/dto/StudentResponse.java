@@ -18,6 +18,8 @@ public class StudentResponse {
     private String email;
     private String phone;
     private String department;
+    private String institutionId;
+    private String institutionName;
     private LocalDateTime createdAt;
     private String walletAddress;
 
@@ -36,6 +38,10 @@ public class StudentResponse {
         dto.email = student.getEmail();
         dto.phone = student.getPhone();
         dto.department = student.getDepartment();
+        if (student.getInstitution() != null) {
+            dto.institutionId = student.getInstitution().getRegistryInstitutionId();
+            dto.institutionName = student.getInstitution().getName();
+        }
         dto.createdAt = student.getCreatedAt();
         dto.walletAddress = student.getWalletAddress();
         return dto;
@@ -46,6 +52,14 @@ public class StudentResponse {
         StudentResponse dto = from(student);
         dto.emailSent = emailSent;
         return dto;
+    }
+
+    public String getInstitutionId() {
+        return institutionId;
+    }
+
+    public String getInstitutionName() {
+        return institutionName;
     }
 
     public Boolean getEmailSent() {

@@ -15,18 +15,18 @@ export function SectionHeading({
 
   return (
     <div className={`${centered ? 'mx-auto max-w-2xl text-center' : 'max-w-2xl'} ${className}`}>
-      {eyebrow && <p className="text-label mb-3 text-mvj-orange">{eyebrow}</p>}
+      {eyebrow && <p className="text-label mb-3 text-brand-accent">{eyebrow}</p>}
 
-      <h2 className={`text-h1 font-bold ${dark ? 'text-white' : 'text-mvj-navy'}`}>
+      <h2 className={`text-h1 font-bold ${dark ? 'text-white' : 'text-brand-primary'}`}>
         {title}
         {accent && (
-          <span className="mt-0.5 block text-[0.88em] leading-[1.08] text-mvj-gold">{accent}</span>
+          <span className="mt-0.5 block text-[0.88em] leading-[1.08] text-brand-gold">{accent}</span>
         )}
       </h2>
 
       {children && (
         <p
-          className={`prose-width text-body-l mt-6 ${dark ? 'text-white/80' : 'text-mvj-muted'} ${
+          className={`prose-width text-body-l mt-6 ${dark ? 'text-white/80' : 'text-brand-muted'} ${
             centered ? 'mx-auto' : ''
           }`}
         >

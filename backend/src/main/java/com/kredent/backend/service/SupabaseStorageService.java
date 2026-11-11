@@ -6,12 +6,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URI;
+import java.net.http.HttpClient;
+import java.time.Duration;
+import java.util.function.Supplier;
 
 /**
  * Talks to Supabase Storage's REST API directly using Spring's built-in
@@ -43,7 +48,15 @@ public class SupabaseStorageService {
         this.serviceRoleKey = serviceRoleKey;
         this.bucket = bucket;
         this.configured = !supabaseUrl.isBlank() && !serviceRoleKey.isBlank();
-        this.restClient = RestClient.builder().build();
+        // HTTP/1.1 and a bounded timeout: long-idle pooled connections to the storage host are
+        // sometimes reset by the server/network, and an unbounded wait would hang the request.
+        HttpClient httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
+        JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(httpClient);
+        factory.setReadTimeout(Duration.ofSeconds(30));
+        this.restClient = RestClient.builder().requestFactory(factory).build();
 
         if (!configured) {
             log.warn("SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set — certificate file "
@@ -55,14 +68,17 @@ public class SupabaseStorageService {
     public String upload(String objectPath, byte[] content, String contentType) {
         requireConfigured();
         try {
-            restClient.post()
+            // x-upsert makes a retry safe: if the first attempt reached Supabase but its response
+            // was lost, the second write simply replaces the same object instead of failing.
+            withRetry("upload", () -> restClient.post()
                     .uri(URI.create(baseUrl + "/storage/v1/object/" + bucket + "/" + objectPath))
                     .header("Authorization", "Bearer " + serviceRoleKey)
                     .header("apikey", serviceRoleKey)
+                    .header("x-upsert", "true")
                     .contentType(MediaType.parseMediaType(contentType))
                     .body(content)
                     .retrieve()
-                    .toBodilessEntity();
+                    .toBodilessEntity());
         } catch (RestClientResponseException e) {
             throw storageError("upload", e);
         }
@@ -72,15 +88,43 @@ public class SupabaseStorageService {
     public byte[] download(String objectPath) {
         requireConfigured();
         try {
-            return restClient.get()
+            return withRetry("download", () -> restClient.get()
                     .uri(URI.create(baseUrl + "/storage/v1/object/" + bucket + "/" + objectPath))
                     .header("Authorization", "Bearer " + serviceRoleKey)
                     .header("apikey", serviceRoleKey)
                     .retrieve()
-                    .body(byte[].class);
+                    .body(byte[].class));
         } catch (RestClientResponseException e) {
             throw storageError("download", e);
         }
+    }
+
+    /**
+     * Runs a read-only storage call, retrying a couple of times when the connection itself fails
+     * (reset, closed, timed out) — those are transient. HTTP error statuses are NOT retried.
+     * If it still cannot connect, the caller gets a clear 502 instead of an unhandled 500.
+     */
+    private <T> T withRetry(String action, Supplier<T> call) {
+        final int attempts = 3;
+        ResourceAccessException last = null;
+        for (int i = 1; i <= attempts; i++) {
+            try {
+                return call.get();
+            } catch (ResourceAccessException e) {
+                last = e;
+                log.warn("Storage {} attempt {}/{} failed: {}", action, i, attempts, e.getMessage());
+                if (i < attempts) {
+                    try {
+                        Thread.sleep(300L * i);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+            }
+        }
+        throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
+                "Certificate storage is temporarily unreachable. Please try again in a moment.", last);
     }
 
     /** Best-effort: if the object (or bucket) is already gone, we still want the DB row removed. */
@@ -99,6 +143,8 @@ public class SupabaseStorageService {
         } catch (RestClientResponseException e) {
             log.warn("Failed to delete storage object {} (continuing with DB cleanup): {} {}",
                     objectPath, e.getStatusCode(), safeBody(e));
+        } catch (ResourceAccessException e) {
+            log.warn("Storage unreachable while deleting {} (continuing with DB cleanup): {}", objectPath, e.getMessage());
         }
     }
 

@@ -13,7 +13,7 @@ const VARIANTS = {
   danger: 'bg-red-100 text-red-800',
   warning: 'bg-amber-100 text-amber-800',
   info: 'bg-blue-100 text-blue-800',
-  neutral: 'bg-surface-sunken text-mvj-muted',
+  neutral: 'bg-surface-sunken text-brand-muted',
 }
 
 const DOT_COLORS = {
@@ -21,7 +21,7 @@ const DOT_COLORS = {
   danger: 'bg-red-600',
   warning: 'bg-amber-600',
   info: 'bg-blue-600',
-  neutral: 'bg-mvj-muted',
+  neutral: 'bg-brand-muted',
 }
 
 /**

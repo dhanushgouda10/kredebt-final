@@ -7,12 +7,19 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "students")
+@Table(name = "students", uniqueConstraints = {
+        // A USN is unique within one institution, not across the whole platform.
+        @UniqueConstraint(name = "uk_students_institution_usn", columnNames = {"institution_id", "usn"})
+})
 public class Student {
 
     @Id
@@ -22,7 +29,7 @@ public class Student {
     @Column(nullable = false)
     private String fullName;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String usn;
 
     @Column(nullable = false, unique = true)
@@ -33,6 +40,12 @@ public class Student {
 
     @Column(nullable = false)
     private String department;
+
+    // The institution this student belongs to. Nullable only for rows created before
+    // multi-institution support (see institution.adopt-legacy-data-for).
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "institution_id")
+    private Institution institution;
 
     // TODO: Replace plain-text storage with BCrypt hashing (PasswordEncoder) before production.
     @Column(nullable = false)
@@ -59,6 +72,14 @@ public class Student {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
     public Long getId() {

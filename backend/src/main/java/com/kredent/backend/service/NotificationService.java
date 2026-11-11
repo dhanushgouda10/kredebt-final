@@ -42,12 +42,14 @@ public class NotificationService {
     }
 
     public NotificationResponse create(NotificationRequest request) {
-        Student student = studentRepository.findById(request.getStudentId())
+        // Administrators may only notify their own institution's students about their own certificates.
+        Long institutionId = currentUserService.getCurrentInstitution().getId();
+        Student student = studentRepository.findByIdAndInstitutionId(request.getStudentId(), institutionId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
 
         Certificate certificate = null;
         if (request.getCertificateId() != null) {
-            certificate = certificateRepository.findById(request.getCertificateId())
+            certificate = certificateRepository.findByIdAndInstitutionId(request.getCertificateId(), institutionId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Certificate not found"));
         }
 
@@ -101,8 +103,15 @@ public class NotificationService {
     }
 
     private void assertCanAccess(Notification notification) {
-        if (currentUserService.isAdmin() || isOwner(notification)) {
+        if (isOwner(notification)) {
             return;
+        }
+        if (currentUserService.isAdmin()) {
+            Long mine = currentUserService.getCurrentInstitution().getId();
+            var studentInstitution = notification.getStudent().getInstitution();
+            if (studentInstitution != null && studentInstitution.getId().equals(mine)) {
+                return;
+            }
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access to this notification");
     }

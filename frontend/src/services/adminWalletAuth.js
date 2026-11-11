@@ -1,4 +1,5 @@
 import { requestAdminNonce, loginAdminWithSignature } from './authService'
+import { completeInstitutionRegistration } from './institutionService'
 
 /**
  * Admin wallet login orchestration: connect → challenge → sign → authenticate.
@@ -30,13 +31,10 @@ export function isMetaMaskAvailable(provider = globalThis.ethereum) {
 }
 
 /**
- * Runs the full login sequence and resolves with the backend's auth response
- * (the same shape the previous address-only endpoint returned, so AuthContext
- * and downstream consumers are unaffected).
- *
- * `provider` is injectable purely so tests can supply a fake wallet.
+ * Connect → challenge → sign. Shared by sign-in and first-time institution registration, since both
+ * must prove the administrator controls the wallet. Resolves with { address, signature }.
  */
-export async function loginAdmin(provider = globalThis.ethereum) {
+async function connectAndSign(provider) {
   if (!isMetaMaskAvailable(provider)) {
     throw new WalletAuthError(
       'MetaMask is not installed. Please install the MetaMask browser extension to continue.',
@@ -84,6 +82,27 @@ export async function loginAdmin(provider = globalThis.ethereum) {
     throw new WalletAuthError('MetaMask returned an empty signature.')
   }
 
+  return { address, signature }
+}
+
+/**
+ * Signs an already-registered institution's administrator in. `institutionId` is the institutional
+ * ID (Demo AICTE PID) being signed in to; the backend re-checks that institution's registry status
+ * and that this wallet is the one linked to it. Resolves with the backend's auth response.
+ *
+ * `provider` is injectable purely so tests can supply a fake wallet.
+ */
+export async function loginAdmin(institutionId, provider = globalThis.ethereum) {
+  const { address, signature } = await connectAndSign(provider)
   // 4 — Exchange the signed challenge for a session.
-  return loginAdminWithSignature(address, signature)
+  return loginAdminWithSignature(address, signature, institutionId)
+}
+
+/**
+ * First-time registration, final step: after the HOI email OTP has been verified, link the
+ * administrator's wallet to the institution (proved by signature) and open a session.
+ */
+export async function registerInstitutionWallet(sessionId, provider = globalThis.ethereum) {
+  const { address, signature } = await connectAndSign(provider)
+  return completeInstitutionRegistration({ sessionId, walletAddress: address, signature })
 }

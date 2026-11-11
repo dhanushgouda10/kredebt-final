@@ -27,16 +27,22 @@ public class DepartmentService {
 
     private final StudentRepository studentRepository;
     private final CertificateRepository certificateRepository;
+    private final CurrentUserService currentUserService;
 
-    public DepartmentService(StudentRepository studentRepository, CertificateRepository certificateRepository) {
+    public DepartmentService(
+            StudentRepository studentRepository,
+            CertificateRepository certificateRepository,
+            CurrentUserService currentUserService) {
         this.studentRepository = studentRepository;
         this.certificateRepository = certificateRepository;
+        this.currentUserService = currentUserService;
     }
 
     /** The full department catalog, each with its real current student count. */
     public List<DepartmentResponse> listDepartments() {
+        Long institutionId = currentUserService.getCurrentInstitution().getId();
         Map<String, Long> counts = new HashMap<>();
-        for (Object[] row : studentRepository.countGroupedByDepartment()) {
+        for (Object[] row : studentRepository.countGroupedByDepartment(institutionId)) {
             String department = (String) row[0];
             Long count = (Long) row[1];
             if (department != null) {
@@ -55,15 +61,16 @@ public class DepartmentService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unknown department code: " + code);
         }
 
+        Long institutionId = currentUserService.getCurrentInstitution().getId();
         DepartmentSummaryResponse dto = new DepartmentSummaryResponse();
         dto.setCode(code);
         dto.setLabel(DepartmentCatalog.labelFor(code));
-        dto.setTotalStudents(studentRepository.countByDepartment(code));
-        dto.setTotalCertificates(certificateRepository.countByDepartment(code));
-        dto.setPendingMint(certificateRepository.countByDepartmentAndStatus(code, CertificateStatus.PENDING_MINT));
-        dto.setMinted(certificateRepository.countByDepartmentAndStatus(code, CertificateStatus.MINTED));
-        dto.setMintFailed(certificateRepository.countByDepartmentAndStatus(code, CertificateStatus.MINT_FAILED));
-        dto.setRevoked(certificateRepository.countByDepartmentAndStatus(code, CertificateStatus.REVOKED));
+        dto.setTotalStudents(studentRepository.countByInstitutionIdAndDepartment(institutionId, code));
+        dto.setTotalCertificates(certificateRepository.countByInstitutionIdAndDepartment(institutionId, code));
+        dto.setPendingMint(certificateRepository.countByInstitutionIdAndDepartmentAndStatus(institutionId, code, CertificateStatus.PENDING_MINT));
+        dto.setMinted(certificateRepository.countByInstitutionIdAndDepartmentAndStatus(institutionId, code, CertificateStatus.MINTED));
+        dto.setMintFailed(certificateRepository.countByInstitutionIdAndDepartmentAndStatus(institutionId, code, CertificateStatus.MINT_FAILED));
+        dto.setRevoked(certificateRepository.countByInstitutionIdAndDepartmentAndStatus(institutionId, code, CertificateStatus.REVOKED));
         return dto;
     }
 }

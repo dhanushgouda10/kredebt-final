@@ -24,7 +24,7 @@ export function CopyButton({ value, label = 'value', className = '' }) {
       onClick={handleCopy}
       aria-label={`Copy ${label}`}
       title={copied ? 'Copied!' : `Copy ${label}`}
-      className={`flex-shrink-0 rounded p-1 text-mvj-muted/75 transition hover:bg-surface-sunken hover:text-mvj-muted ${className}`}
+      className={`flex-shrink-0 rounded p-1 text-brand-muted/75 transition hover:bg-surface-sunken hover:text-brand-muted ${className}`}
     >
       {copied ? (
         <svg className="h-4 w-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

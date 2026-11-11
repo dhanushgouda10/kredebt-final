@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * SENDER LIMITATION: Resend only delivers from a verified domain. With the default
  * onboarding@resend.dev sender, mail is delivered ONLY to the address on the Resend
- * account that owns the API key — sending to an arbitrary @mvjce.edu.in address will
+ * account that owns the API key — sending to an arbitrary student address will
  * not arrive. Verifying a real domain (SPF + DKIM DNS records) is required to reach
  * actual students.
  */
@@ -120,54 +120,52 @@ public class ResendEmailService implements EmailService {
                 <!DOCTYPE html>
                 <html lang="en">
                 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-                <body style="margin:0;padding:0;background-color:#faf7f0;font-family:Helvetica,Arial,sans-serif;">
-                  <table role="presentation" width="100%%" cellpadding="0" cellspacing="0" style="background-color:#faf7f0;padding:24px 12px;">
+                <body style="margin:0;padding:0;background-color:#f1f5f9;font-family:Helvetica,Arial,sans-serif;">
+                  <table role="presentation" width="100%%" cellpadding="0" cellspacing="0" style="background-color:#f1f5f9;padding:24px 12px;">
                     <tr><td align="center">
-                      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%%;background-color:#fefcf7;border:1px solid #e7e0d2;border-radius:12px;overflow:hidden;">
+                      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%%;background-color:#ffffff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
 
-                        <tr><td style="background-color:#0e2a5c;padding:28px 32px;">
+                        <tr><td style="background-color:#1e1b4b;padding:28px 32px;">
                           <div style="color:#ffffff;font-size:22px;font-weight:bold;letter-spacing:1px;">KREDENT</div>
-                          <div style="color:#e9b949;font-size:13px;margin-top:4px;">MVJ College of Engineering</div>
+                          <div style="color:#99f6e4;font-size:13px;margin-top:4px;">Trusted Academic Credentials. Verified on Blockchain.</div>
                         </td></tr>
 
                         <tr><td style="padding:32px;">
-                          <h1 style="margin:0 0 20px;font-size:20px;color:#0e2a5c;">Your student account has been created</h1>
+                          <h1 style="margin:0 0 20px;font-size:20px;color:#312e81;">Your student account has been created</h1>
 
-                          <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#1b2a41;">Dear %s,</p>
+                          <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#0f172a;">Dear %s,</p>
 
-                          <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#1b2a41;">
+                          <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#0f172a;">
                             An account has been created for you on Kredent, the digital academic credential
-                            platform of MVJ College of Engineering. Degree certificates issued to you by the
-                            college will appear in your student portal, where you can view and download them
-                            at any time.
+                            platform. Degree certificates issued to you by your institution will appear in your
+                            student portal, where you can view and download them at any time.
                           </p>
 
-                          <table role="presentation" width="100%%" cellpadding="0" cellspacing="0" style="background-color:#f3eee3;border-radius:8px;margin:0 0 24px;">
-                            <tr><td style="padding:18px 20px;font-size:15px;line-height:1.7;color:#1b2a41;">
-                              <strong style="color:#0e2a5c;">Name</strong><br>%s<br><br>
-                              <strong style="color:#0e2a5c;">USN</strong><br>%s<br><br>
-                              <strong style="color:#0e2a5c;">Department</strong><br>%s<br><br>
-                              <strong style="color:#0e2a5c;">Registered email</strong><br>%s%s
+                          <table role="presentation" width="100%%" cellpadding="0" cellspacing="0" style="background-color:#f1f5f9;border-radius:8px;margin:0 0 24px;">
+                            <tr><td style="padding:18px 20px;font-size:15px;line-height:1.7;color:#0f172a;">
+                              <strong style="color:#312e81;">Name</strong><br>%s<br><br>
+                              <strong style="color:#312e81;">USN</strong><br>%s<br><br>
+                              <strong style="color:#312e81;">Department</strong><br>%s<br><br>
+                              <strong style="color:#312e81;">Registered email</strong><br>%s%s
                             </td></tr>
                           </table>
 
-                          <p style="margin:0 0 24px;font-size:16px;line-height:1.6;color:#1b2a41;">
-                            Your login credentials have been set by the college administrator and shared with
+                          <p style="margin:0 0 24px;font-size:16px;line-height:1.6;color:#0f172a;">
+                            Your login credentials have been set by your institution's administrator and shared with
                             you separately. For your security they are not included in this email.
                           </p>
 
                           <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 8px;">
-                            <tr><td style="background-color:#f7941d;border-radius:8px;">
+                            <tr><td style="background-color:#0f766e;border-radius:8px;">
                               <a href="%s" style="display:inline-block;padding:13px 28px;font-size:15px;font-weight:bold;color:#ffffff;text-decoration:none;">Sign in to Kredent</a>
                             </td></tr>
                           </table>
-                          <p style="margin:12px 0 0;font-size:13px;color:#5a6b84;word-break:break-all;">%s</p>
+                          <p style="margin:12px 0 0;font-size:13px;color:#64748b;word-break:break-all;">%s</p>
                         </td></tr>
 
-                        <tr><td style="background-color:#f3eee3;padding:20px 32px;border-top:1px solid #e7e0d2;">
-                          <p style="margin:0;font-size:12px;line-height:1.6;color:#5a6b84;">
-                            This is an automated email from Kredent. Please do not reply.<br>
-                            MVJ College of Engineering, Near ITPB, Whitefield, Bangalore-560 067
+                        <tr><td style="background-color:#f1f5f9;padding:20px 32px;border-top:1px solid #e2e8f0;">
+                          <p style="margin:0;font-size:12px;line-height:1.6;color:#64748b;">
+                            This is an automated email from Kredent. Please do not reply.
                           </p>
                         </td></tr>
 
@@ -182,7 +180,7 @@ public class ResendEmailService implements EmailService {
                 escape(student.getUsn()),
                 escape(student.getDepartment()),
                 escape(student.getEmail()),
-                issuedOn.isBlank() ? "" : "<br><br><strong style=\"color:#0e2a5c;\">Account created</strong><br>" + issuedOn,
+                issuedOn.isBlank() ? "" : "<br><br><strong style=\"color:#312e81;\">Account created</strong><br>" + issuedOn,
                 loginUrl,
                 loginUrl);
     }
@@ -190,23 +188,23 @@ public class ResendEmailService implements EmailService {
     /** Plain-text alternative — HTML-only mail scores worse with spam filters. */
     /* package-private for testing */ String renderText(Student student) {
         return """
-                KREDENT — MVJ College of Engineering
+                KREDENT — Trusted Academic Credentials. Verified on Blockchain.
 
                 Your student account has been created
 
                 Dear %s,
 
                 An account has been created for you on Kredent, the digital academic
-                credential platform of MVJ College of Engineering. Degree certificates
-                issued to you by the college will appear in your student portal.
+                credential platform. Degree certificates issued to you by your
+                institution will appear in your student portal.
 
                 Name:             %s
                 USN:              %s
                 Department:       %s
                 Registered email: %s
 
-                Your login credentials have been set by the college administrator and
-                shared with you separately. For your security they are not included in
+                Your login credentials have been set by your institution's administrator
+                and shared with you separately. For your security they are not included in
                 this email.
 
                 Sign in: %s

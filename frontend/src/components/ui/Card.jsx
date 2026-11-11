@@ -18,7 +18,7 @@ export function Card({ children, className = '', elevated = false, as: Comp = 'd
 /** Flat navy header bar for form/table cards — no icon chip. */
 export function CardHeader({ title, subtitle, action, className = '' }) {
   return (
-    <div className={`border-b border-white/10 bg-mvj-navy px-6 py-5 ${className}`}>
+    <div className={`border-b border-white/10 bg-brand-primary px-6 py-5 ${className}`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-h3 font-bold text-white">{title}</h2>

@@ -50,7 +50,7 @@ public class AdminCertificateController {
             @RequestParam(required = false) CertificateStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("issuedAt").descending());
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100), Sort.by("issuedAt").descending());
         // department/year/status are the Certificate Registry's filter strip — all optional, all
         // applied server-side (CertificateService.listFiltered). Falls back to the plain
         // search-only path when none of them are set, so existing callers keep working unchanged.
@@ -80,6 +80,28 @@ public class AdminCertificateController {
         return ResponseEntity.ok(certificateService.uploadFile(id, file));
     }
 
+    /** Re-creates a lost generated PDF in storage — only succeeds if it matches the recorded hash. */
+    @PostMapping("/certificates/{id}/restore-file")
+    public ResponseEntity<CertificateResponse> restoreFile(@PathVariable UUID id) {
+        return ResponseEntity.ok(certificateService.restoreFile(id));
+    }
+
+    /** Watermarked sample of the standard certificate for this college — nothing is created or stored. */
+    @GetMapping("/certificate-preview")
+    public ResponseEntity<byte[]> previewSample() {
+        return ResponseEntity.ok()
+                .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
+                .header("Content-Disposition", "inline; filename=\"sample-certificate.pdf\"")
+                .header("Cache-Control", "no-store")
+                .body(certificateService.previewSample());
+    }
+
+    /** Draws the standard certificate from the student's record, adds the QR, hashes and stores it. */
+    @PostMapping("/certificates/{id}/generate")
+    public ResponseEntity<CertificateResponse> generateFile(@PathVariable UUID id) {
+        return ResponseEntity.ok(certificateService.generateFile(id));
+    }
+
     /**
      * Called AFTER the admin's MetaMask has already signed and mined the issueCredential()
      * transaction directly from the browser (see frontend blockchainService.js). This endpoint
@@ -105,7 +127,7 @@ public class AdminCertificateController {
             @PathVariable Long studentId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("issuedAt").descending());
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100), Sort.by("issuedAt").descending());
         return ResponseEntity.ok(certificateService.getCertificatesForStudent(studentId, pageable));
     }
 }

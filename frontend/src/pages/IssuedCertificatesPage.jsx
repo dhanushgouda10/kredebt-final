@@ -370,8 +370,8 @@ export function IssuedCertificatesPage() {
             onClick={() => selectDepartment('')}
             className={`rounded-md border px-4 py-2.5 text-caption font-medium transition ${
               selectedDepartment === ''
-                ? 'border-kredent-navy bg-kredent-navy text-white'
-                : 'border-surface-line bg-surface-raised text-mvj-muted hover:border-kredent-navy/50'
+                ? 'border-brand-primary bg-brand-primary text-white'
+                : 'border-surface-line bg-surface-raised text-brand-muted hover:border-brand-primary/50'
             }`}
           >
             All Departments
@@ -383,8 +383,8 @@ export function IssuedCertificatesPage() {
               onClick={() => selectDepartment(dept.code)}
               className={`rounded-md border px-4 py-2.5 text-caption font-medium transition ${
                 selectedDepartment === dept.code
-                  ? 'border-kredent-accent bg-kredent-accent text-white'
-                  : 'border-surface-line bg-surface-raised text-mvj-muted hover:border-kredent-accent/50'
+                  ? 'border-brand-accent bg-brand-accent text-white'
+                  : 'border-surface-line bg-surface-raised text-brand-muted hover:border-brand-accent/50'
               }`}
             >
               {dept.code}
@@ -401,8 +401,8 @@ export function IssuedCertificatesPage() {
               </Alert>
             )}
             <div className="mb-3 flex items-baseline gap-2">
-              <h2 className="text-h3 font-bold text-mvj-navy">{departmentLabel(selectedDepartment)}</h2>
-              <span className="text-caption text-mvj-muted">({selectedDepartment})</span>
+              <h2 className="text-h3 font-bold text-brand-primary">{departmentLabel(selectedDepartment)}</h2>
+              <span className="text-caption text-brand-muted">({selectedDepartment})</span>
             </div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
               {!deptSummary ? (
@@ -411,9 +411,9 @@ export function IssuedCertificatesPage() {
                 <>
                   <StatCard label="Total Students" value={deptSummary.totalStudents} />
                   <StatCard label="Certificates Issued" value={deptSummary.totalCertificates} />
-                  <StatCard label="Pending" value={deptSummary.pendingMint} valueClassName="text-mvj-orange" />
+                  <StatCard label="Pending" value={deptSummary.pendingMint} valueClassName="text-brand-accent" />
                   <StatCard label="Minted" value={deptSummary.minted} />
-                  <StatCard label="Revoked" value={deptSummary.revoked} valueClassName="text-mvj-red" />
+                  <StatCard label="Revoked" value={deptSummary.revoked} valueClassName="text-brand-danger" />
                 </>
               )}
             </div>
@@ -474,12 +474,12 @@ export function IssuedCertificatesPage() {
               <table className="w-full">
                 <thead className="border-b border-surface-line bg-surface-sunken">
                   <tr>
-                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Student</th>
-                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">USN</th>
-                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Department</th>
-                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Year</th>
-                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Status</th>
-                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Actions</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">Student</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">USN</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">Department</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">Year</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">Status</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-surface-line">
@@ -502,17 +502,17 @@ export function IssuedCertificatesPage() {
                       >
                         <td className="px-6 py-5">
                           <div>
-                            <p className="font-semibold text-mvj-ink">{cert.studentName}</p>
-                            <p className="text-caption text-mvj-muted/75">{cert.degreeName}</p>
+                            <p className="font-semibold text-brand-ink">{cert.studentName}</p>
+                            <p className="text-caption text-brand-muted/75">{cert.degreeName}</p>
                           </div>
                         </td>
                         <td className="px-6 py-5">
-                          <code className="rounded bg-surface-sunken px-2 py-1 font-mono text-caption text-mvj-muted">{cert.studentUsn}</code>
+                          <code className="rounded bg-surface-sunken px-2 py-1 font-mono text-caption text-brand-muted">{cert.studentUsn}</code>
                         </td>
                         <td className="px-6 py-5">
                           <Badge variant="info">{cert.department}</Badge>
                         </td>
-                        <td className="px-6 py-5 text-caption text-mvj-muted">{cert.yearOfCompletion}</td>
+                        <td className="px-6 py-5 text-caption text-brand-muted">{cert.yearOfCompletion}</td>
                         <td className="px-6 py-5">
                           <Badge variant={statusMeta(cert.status).variant}>{statusMeta(cert.status).label}</Badge>
                         </td>
@@ -527,7 +527,7 @@ export function IssuedCertificatesPage() {
                             {cert.fileAvailable && (
                               <button
                                 onClick={() => handleDownload(cert)}
-                                className="rounded text-caption font-medium text-mvj-muted transition-colors hover:text-mvj-ink"
+                                className="rounded text-caption font-medium text-brand-muted transition-colors hover:text-brand-ink"
                               >
                                 Download
                               </button>
@@ -536,7 +536,7 @@ export function IssuedCertificatesPage() {
                               <button
                                 onClick={() => handleIssueOnBlockchain(cert)}
                                 disabled={blockchainBusyId === cert.id}
-                                className="rounded text-caption font-medium text-kredent-accent transition-colors hover:text-orange-700 disabled:opacity-50"
+                                className="rounded text-caption font-medium text-brand-accent transition-colors hover:text-orange-700 disabled:opacity-50"
                               >
                                 {blockchainBusyId === cert.id ? 'Issuing…' : 'Issue on Blockchain'}
                               </button>
@@ -577,54 +577,54 @@ export function IssuedCertificatesPage() {
             <div className="space-y-6 p-6">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <p className="text-caption text-mvj-muted">Student Name</p>
-                  <p className="font-semibold text-mvj-ink">{selectedCertificate.studentName}</p>
+                  <p className="text-caption text-brand-muted">Student Name</p>
+                  <p className="font-semibold text-brand-ink">{selectedCertificate.studentName}</p>
                 </div>
                 <div>
-                  <p className="text-caption text-mvj-muted">USN</p>
-                  <p className="font-mono text-caption text-mvj-ink">{selectedCertificate.studentUsn}</p>
+                  <p className="text-caption text-brand-muted">USN</p>
+                  <p className="font-mono text-caption text-brand-ink">{selectedCertificate.studentUsn}</p>
                 </div>
                 <div>
-                  <p className="text-caption text-mvj-muted">Certificate Number</p>
-                  <p className="font-mono text-caption text-mvj-ink">{selectedCertificate.certificateNumber}</p>
+                  <p className="text-caption text-brand-muted">Certificate Number</p>
+                  <p className="font-mono text-caption text-brand-ink">{selectedCertificate.certificateNumber}</p>
                 </div>
                 <div>
-                  <p className="text-caption text-mvj-muted">Degree</p>
-                  <p className="font-semibold text-mvj-ink">{selectedCertificate.degreeName}</p>
+                  <p className="text-caption text-brand-muted">Degree</p>
+                  <p className="font-semibold text-brand-ink">{selectedCertificate.degreeName}</p>
                 </div>
                 <div>
-                  <p className="text-caption text-mvj-muted">Department</p>
-                  <p className="font-semibold text-mvj-ink">{selectedCertificate.department}</p>
+                  <p className="text-caption text-brand-muted">Department</p>
+                  <p className="font-semibold text-brand-ink">{selectedCertificate.department}</p>
                 </div>
                 <div>
-                  <p className="text-caption text-mvj-muted">Year of Completion</p>
-                  <p className="font-semibold text-mvj-ink">{selectedCertificate.yearOfCompletion}</p>
+                  <p className="text-caption text-brand-muted">Year of Completion</p>
+                  <p className="font-semibold text-brand-ink">{selectedCertificate.yearOfCompletion}</p>
                 </div>
                 <div>
-                  <p className="mb-1 text-caption text-mvj-muted">Status</p>
+                  <p className="mb-1 text-caption text-brand-muted">Status</p>
                   <Badge variant={statusMeta(selectedCertificate.status).variant}>
                     {statusMeta(selectedCertificate.status).label}
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-caption text-mvj-muted">Issued Date</p>
-                  <p className="font-semibold text-mvj-ink">{selectedCertificate.issuedAt?.slice(0, 10)}</p>
+                  <p className="text-caption text-brand-muted">Issued Date</p>
+                  <p className="font-semibold text-brand-ink">{selectedCertificate.issuedAt?.slice(0, 10)}</p>
                 </div>
                 {selectedCertificate.revokedReason && (
                   <div className="md:col-span-2">
-                    <p className="text-caption text-mvj-muted">Revoked Reason</p>
-                    <p className="font-semibold text-mvj-ink">{selectedCertificate.revokedReason}</p>
+                    <p className="text-caption text-brand-muted">Revoked Reason</p>
+                    <p className="font-semibold text-brand-ink">{selectedCertificate.revokedReason}</p>
                   </div>
                 )}
                 <div className="md:col-span-2">
-                  <p className="mb-1 text-caption text-mvj-muted">SHA-256 File Hash</p>
+                  <p className="mb-1 text-caption text-brand-muted">SHA-256 File Hash</p>
                   {selectedCertificate.fileHash ? (
                     <div className="flex items-start justify-between gap-2 rounded bg-surface-sunken p-2">
-                      <p className="break-all font-mono text-micro text-mvj-ink">{selectedCertificate.fileHash}</p>
+                      <p className="break-all font-mono text-micro text-brand-ink">{selectedCertificate.fileHash}</p>
                       <CopyButton value={selectedCertificate.fileHash} label="SHA-256 hash" />
                     </div>
                   ) : (
-                    <p className="text-caption text-mvj-muted/75 italic">No file uploaded yet</p>
+                    <p className="text-caption text-brand-muted/75 italic">No file uploaded yet</p>
                   )}
                 </div>
                 {selectedCertificate.fileAvailable && (
@@ -637,12 +637,12 @@ export function IssuedCertificatesPage() {
 
                 {/* Blockchain section (Phase 3) */}
                 <div className="border-t border-surface-line pt-4 md:col-span-2">
-                  <p className="mb-2 text-caption font-semibold text-mvj-muted">Blockchain</p>
+                  <p className="mb-2 text-caption font-semibold text-brand-muted">Blockchain</p>
 
                   {selectedCertificate.status === 'MINTED' || selectedCertificate.status === 'REVOKED' ? (
                     <div className="space-y-3 rounded-lg bg-surface-sunken p-4 text-caption">
                       <div className="flex items-center justify-between">
-                        <span className="text-mvj-muted">Blockchain Status:</span>
+                        <span className="text-brand-muted">Blockchain Status:</span>
                         <span
                           className={`inline-flex items-center gap-1.5 font-semibold ${
                             selectedCertificate.status === 'REVOKED' ? 'text-red-600' : 'text-green-600'
@@ -657,7 +657,7 @@ export function IssuedCertificatesPage() {
                         </span>
                       </div>
                       <div>
-                        <span className="mb-1 block text-mvj-muted">Transaction Hash:</span>
+                        <span className="mb-1 block text-brand-muted">Transaction Hash:</span>
                         <div className="flex items-start justify-between gap-2">
                           <a
                             href={`${BLOCK_EXPLORER_URL}/tx/${selectedCertificate.txHash}`}
@@ -671,18 +671,18 @@ export function IssuedCertificatesPage() {
                         </div>
                       </div>
                       <div>
-                        <span className="mb-1 block text-mvj-muted">Token / Credential ID:</span>
-                        <span className="font-mono text-micro text-mvj-ink">{selectedCertificate.tokenId}</span>
+                        <span className="mb-1 block text-brand-muted">Token / Credential ID:</span>
+                        <span className="font-mono text-micro text-brand-ink">{selectedCertificate.tokenId}</span>
                       </div>
                       <div>
-                        <span className="mb-1 block text-mvj-muted">Student Wallet:</span>
+                        <span className="mb-1 block text-brand-muted">Student Wallet:</span>
                         <div className="flex items-start justify-between gap-2">
-                          <span className="break-all font-mono text-micro text-mvj-ink">{selectedCertificate.walletAddress}</span>
+                          <span className="break-all font-mono text-micro text-brand-ink">{selectedCertificate.walletAddress}</span>
                           <CopyButton value={selectedCertificate.walletAddress} label="student wallet address" />
                         </div>
                       </div>
                       <div>
-                        <span className="mb-1 block text-mvj-muted">Contract:</span>
+                        <span className="mb-1 block text-brand-muted">Contract:</span>
                         <div className="flex items-start justify-between gap-2">
                           <a
                             href={`${BLOCK_EXPLORER_URL}/address/${selectedCertificate.contractAddress}`}
@@ -698,9 +698,9 @@ export function IssuedCertificatesPage() {
                     </div>
                   ) : (
                     <div className="rounded-lg bg-surface-sunken p-4 text-caption">
-                      <p className="mb-3 text-mvj-muted">
+                      <p className="mb-3 text-brand-muted">
                         Not yet issued on-chain. Student's system-managed wallet:{' '}
-                        <span className="font-mono text-micro text-mvj-ink">
+                        <span className="font-mono text-micro text-brand-ink">
                           {selectedCertificate.studentWalletAddress || 'none on file'}
                         </span>
                       </p>
@@ -714,7 +714,7 @@ export function IssuedCertificatesPage() {
                           Issue on Blockchain
                         </Button>
                       ) : (
-                        <p className="text-micro italic text-mvj-muted/75">Upload the certificate PDF before issuing on the blockchain.</p>
+                        <p className="text-micro italic text-brand-muted/75">Upload the certificate PDF before issuing on the blockchain.</p>
                       )}
                     </div>
                   )}
@@ -729,15 +729,15 @@ export function IssuedCertificatesPage() {
         <Modal open={Boolean(reconcileTarget)} onClose={closeReconcileModal} title="Complete blockchain reconciliation" size="md">
           {reconcileTarget && (
             <div className="space-y-6 p-6">
-              <p className="text-caption text-mvj-muted">{reconcileTarget.message}</p>
+              <p className="text-caption text-brand-muted">{reconcileTarget.message}</p>
               <div className="grid grid-cols-2 gap-4 text-caption">
                 <div>
-                  <p className="text-mvj-muted">Token ID</p>
-                  <p className="font-mono font-semibold text-mvj-ink">{reconcileTarget.tokenId}</p>
+                  <p className="text-brand-muted">Token ID</p>
+                  <p className="font-mono font-semibold text-brand-ink">{reconcileTarget.tokenId}</p>
                 </div>
                 <div>
-                  <p className="text-mvj-muted">Contract</p>
-                  <p className="break-all font-mono text-micro text-mvj-ink">{reconcileTarget.contractAddress}</p>
+                  <p className="text-brand-muted">Contract</p>
+                  <p className="break-all font-mono text-micro text-brand-ink">{reconcileTarget.contractAddress}</p>
                 </div>
               </div>
               <Input

@@ -3,6 +3,7 @@ package com.kredent.backend.exception;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -38,6 +39,29 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    /** Typed application errors: adds a stable `code` (and `retryAfterSeconds` for cooldowns). */
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<Map<String, Object>> handleApi(ApiException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", Instant.now().toString());
+        body.put("status", ex.getStatus().value());
+        body.put("code", ex.getCode());
+        body.put("message", ex.getMessage());
+        ResponseEntity.BodyBuilder response = ResponseEntity.status(ex.getStatus());
+        if (ex.getRetryAfterSeconds() != null) {
+            body.put("retryAfterSeconds", ex.getRetryAfterSeconds());
+            response.header("Retry-After", String.valueOf(ex.getRetryAfterSeconds()));
+        }
+        return response.body(body);
+    }
+
+    /** Unique-constraint races (e.g. two simultaneous registrations of one institution). */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleIntegrity(DataIntegrityViolationException ex) {
+        log.warn("Data integrity violation: {}", ex.getMostSpecificCause().getClass().getSimpleName());
+        return build(HttpStatus.CONFLICT, "That record already exists.");
     }
 
     @ExceptionHandler(ResponseStatusException.class)

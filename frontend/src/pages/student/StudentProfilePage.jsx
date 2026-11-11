@@ -68,21 +68,25 @@ export function StudentProfilePage() {
             <CardHeader title="Account Information" />
             <div className="space-y-6 p-6">
               <div className="grid grid-cols-1 gap-4 text-caption sm:grid-cols-2">
-                <div>
-                  <p className="text-mvj-muted">USN</p>
-                  <p className="font-mono font-semibold text-mvj-ink">{profile.usn}</p>
+                <div className="sm:col-span-2">
+                  <p className="text-brand-muted">College</p>
+                  <p className="font-semibold text-brand-ink">{profile.institutionName || '—'}</p>
                 </div>
                 <div>
-                  <p className="text-mvj-muted">Email</p>
-                  <p className="font-semibold text-mvj-ink">{profile.email}</p>
+                  <p className="text-brand-muted">USN</p>
+                  <p className="font-mono font-semibold text-brand-ink">{profile.usn}</p>
                 </div>
                 <div>
-                  <p className="text-mvj-muted">Department</p>
-                  <p className="font-semibold text-mvj-ink">{profile.department}</p>
+                  <p className="text-brand-muted">Email</p>
+                  <p className="font-semibold text-brand-ink">{profile.email}</p>
                 </div>
                 <div>
-                  <p className="text-mvj-muted">System-managed wallet</p>
-                  <p className="break-all font-mono text-micro text-mvj-ink">
+                  <p className="text-brand-muted">Department</p>
+                  <p className="font-semibold text-brand-ink">{profile.department}</p>
+                </div>
+                <div>
+                  <p className="text-brand-muted">System-managed wallet</p>
+                  <p className="break-all font-mono text-micro text-brand-ink">
                     {profile.walletAddress || 'Not yet generated'}
                   </p>
                 </div>

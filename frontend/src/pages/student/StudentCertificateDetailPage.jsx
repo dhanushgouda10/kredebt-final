@@ -17,8 +17,8 @@ import { certificateStatusMeta } from '../../utils/certificateStatus'
 function Field({ label, value, mono = false }) {
   return (
     <div className="min-w-0">
-      <dt className="text-micro font-semibold uppercase tracking-wide text-mvj-muted/75">{label}</dt>
-      <dd className={`mt-1 font-semibold text-mvj-ink ${mono ? 'break-all font-mono text-micro' : 'text-caption'}`}>
+      <dt className="text-micro font-semibold uppercase tracking-wide text-brand-muted/75">{label}</dt>
+      <dd className={`mt-1 font-semibold text-brand-ink ${mono ? 'break-all font-mono text-micro' : 'text-caption'}`}>
         {value || '—'}
       </dd>
     </div>
@@ -30,9 +30,9 @@ function TechnicalRow({ label, value, copyable = true }) {
   if (!value) return null
   return (
     <div className="flex flex-col gap-1 py-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
-      <dt className="flex-shrink-0 text-caption text-mvj-muted/75">{label}</dt>
+      <dt className="flex-shrink-0 text-caption text-brand-muted/75">{label}</dt>
       <dd className="flex min-w-0 items-center gap-2 sm:justify-end">
-        <span className="min-w-0 break-all font-mono text-micro text-mvj-ink">{value}</span>
+        <span className="min-w-0 break-all font-mono text-micro text-brand-ink">{value}</span>
         {copyable && <CopyButton value={String(value)} label={label} />}
       </dd>
     </div>
@@ -108,17 +108,17 @@ export function StudentCertificateDetailPage() {
           <div className="space-y-6">
             {/* 1 — Status, in plain language. */}
             <Card className="p-6">
-              <p className="text-h3 text-kredent-navy">Status</p>
-              {meta.plain && <p className="mt-2 text-body leading-relaxed text-mvj-muted">{meta.plain}</p>}
+              <p className="text-h3 text-brand-primary">Status</p>
+              {meta.plain && <p className="mt-2 text-body leading-relaxed text-brand-muted">{meta.plain}</p>}
               {cert.status === 'REVOKED' && cert.revokedReason && (
-                <p className="mt-2 text-caption text-mvj-muted">Reason given: {cert.revokedReason}</p>
+                <p className="mt-2 text-caption text-brand-muted">Reason given: {cert.revokedReason}</p>
               )}
             </Card>
 
             {/* 2 — Who it belongs to and what it is. */}
             <Card>
               <div className="border-b border-surface-line px-6 py-4">
-                <h2 className="text-body font-bold text-kredent-navy">Certificate information</h2>
+                <h2 className="text-body font-bold text-brand-primary">Certificate information</h2>
               </div>
               <dl className="grid grid-cols-1 gap-5 p-6 sm:grid-cols-2">
                 <Field label="Awarded to" value={cert.studentName} />
@@ -133,7 +133,7 @@ export function StudentCertificateDetailPage() {
             {/* 3 — The document itself. */}
             <Card>
               <div className="border-b border-surface-line px-6 py-4">
-                <h2 className="text-body font-bold text-kredent-navy">Your document</h2>
+                <h2 className="text-body font-bold text-brand-primary">Your document</h2>
               </div>
               <div className="p-6">
                 {downloadError && (
@@ -143,7 +143,7 @@ export function StudentCertificateDetailPage() {
                 )}
                 {cert.fileAvailable ? (
                   <>
-                    <p className="mb-4 text-caption text-mvj-muted">
+                    <p className="mb-4 text-caption text-brand-muted">
                       The PDF carries a QR code that anyone can scan to confirm it is genuine.
                     </p>
                     <Button variant="primary" onClick={handleDownload} loading={downloading}>
@@ -151,7 +151,7 @@ export function StudentCertificateDetailPage() {
                     </Button>
                   </>
                 ) : (
-                  <p className="text-caption text-mvj-muted/75">The certificate PDF has not been uploaded yet.</p>
+                  <p className="text-caption text-brand-muted/75">The certificate PDF has not been uploaded yet.</p>
                 )}
               </div>
             </Card>
@@ -162,12 +162,12 @@ export function StudentCertificateDetailPage() {
                 <details className="group">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-4">
                     <div className="min-w-0">
-                      <h2 className="text-body font-bold text-kredent-navy">Verification details</h2>
-                      <p className="mt-0.5 text-caption text-mvj-muted">
+                      <h2 className="text-body font-bold text-brand-primary">Verification details</h2>
+                      <p className="mt-0.5 text-caption text-brand-muted">
                         Technical identifiers, if you need to share proof.
                       </p>
                     </div>
-                    <span className="flex-shrink-0 text-caption font-semibold text-kredent-accent">
+                    <span className="flex-shrink-0 text-caption font-semibold text-brand-accent">
                       <span className="group-open:hidden">Show</span>
                       <span className="hidden group-open:inline">Hide</span>
                     </span>
@@ -196,7 +196,7 @@ export function StudentCertificateDetailPage() {
                         href={`${BLOCK_EXPLORER_URL}/tx/${cert.txHash}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-5 inline-flex items-center gap-2 rounded-lg border border-kredent-navy px-4 py-2 text-caption font-semibold text-kredent-navy transition hover:bg-kredent-navy hover:text-white"
+                        className="mt-5 inline-flex items-center gap-2 rounded-lg border border-brand-primary px-4 py-2 text-caption font-semibold text-brand-primary transition hover:bg-brand-primary hover:text-white"
                       >
                         View on the public block explorer
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

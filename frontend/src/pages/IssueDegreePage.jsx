@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Alert, Badge, Button, Card, CardHeader, Input, PageHeader, Select } from '../components/ui'
-import { createCertificate, uploadCertificateFile } from '../services/certificateService'
+import { createCertificate, deleteCertificateDraft, generateCertificateFile, openSampleCertificate } from '../services/certificateService'
 import { listDepartments } from '../services/departmentService'
 import { listStudents } from '../services/adminStudentService'
 
@@ -26,9 +26,9 @@ export function IssueDegreePage() {
     degreeName: '',
     yearOfCompletion: '',
   })
-  const [file, setFile] = useState(null)
 
   const [isIssuing, setIsIssuing] = useState(false)
+  const [isPreviewing, setIsPreviewing] = useState(false)
   const [error, setError] = useState('')
   const [issuedCertificate, setIssuedCertificate] = useState(null)
   const navigate = useNavigate()
@@ -119,8 +119,16 @@ export function IssueDegreePage() {
     })
   }
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files?.[0] ?? null)
+  const handlePreview = async () => {
+    setError('')
+    setIsPreviewing(true)
+    try {
+      await openSampleCertificate()
+    } catch (err) {
+      setError(err.message || 'Could not open the sample certificate')
+    } finally {
+      setIsPreviewing(false)
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -128,31 +136,36 @@ export function IssueDegreePage() {
     setError('')
     setIssuedCertificate(null)
 
-    if (!file) {
-      setError('Please select the certificate PDF to upload.')
-      return
-    }
-
     setIsIssuing(true)
+    let created = null
     try {
       // Step 1: create the certificate metadata row. Department is intentionally NOT sent here —
       // the backend always derives it from the selected student's own department
       // (CertificateService.createMetadata), so a certificate can never disagree with the
       // student it belongs to.
-      const certificate = await createCertificate({
+      const certificate = (created = await createCertificate({
         studentId: Number(formData.studentId),
         degreeName: formData.degreeName,
         yearOfCompletion: Number(formData.yearOfCompletion),
-      })
+      }))
 
-      // Step 2: attach the PDF — the backend hashes it (SHA-256) and stores it in Supabase Storage.
-      const withFile = await uploadCertificateFile(certificate.id, file)
+      // Step 2: the backend generates the standard certificate (college name, student details,
+      // verification QR), hashes it (SHA-256) and stores it in Supabase Storage.
+      const withFile = await generateCertificateFile(certificate.id)
 
       setIssuedCertificate(withFile)
       setFormData({ studentId: '', degreeName: '', yearOfCompletion: '' })
-      setFile(null)
       e.target.reset()
     } catch (err) {
+      // If the record was created but its PDF could not be generated, remove the empty record so
+      // retrying does not leave a duplicate behind.
+      if (created) {
+        try {
+          await deleteCertificateDraft(created.id)
+        } catch {
+          // best effort — the admin can still delete it from Issued Certificates
+        }
+      }
       setError(err.message || 'Failed to issue certificate')
     } finally {
       setIsIssuing(false)
@@ -165,7 +178,7 @@ export function IssueDegreePage() {
         <PageHeader
           eyebrow="Administration"
           title="Issue a degree"
-          subtitle="Create the certificate record and attach the signed PDF."
+          subtitle="Create the certificate record. The certificate is generated automatically."
         />
 
         <div className="mx-auto max-w-4xl">
@@ -173,7 +186,7 @@ export function IssueDegreePage() {
             <Card>
               <CardHeader
                 title="Issue Degree Credential"
-                subtitle="Select the student, enter degree details, and upload the certificate PDF"
+                subtitle="Select the student and degree details. The certificate PDF is generated automatically."
               />
 
               <div className="p-6 sm:p-8">
@@ -229,17 +242,17 @@ export function IssueDegreePage() {
                     </Select>
 
                     <div>
-                      <p className="mb-1.5 text-caption font-medium text-mvj-muted">Confirmed Department</p>
+                      <p className="mb-1.5 text-caption font-medium text-brand-muted">Confirmed Department</p>
                       <div className="flex h-[46px] items-center rounded-lg border border-surface-line bg-surface-sunken px-4">
                         {selectedStudent ? (
                           <Badge variant="info">
                             {selectedStudent.department} — {departmentLabel(selectedStudent.department)}
                           </Badge>
                         ) : (
-                          <span className="text-caption text-mvj-muted/75">Select a student to confirm department</span>
+                          <span className="text-caption text-brand-muted/75">Select a student to confirm department</span>
                         )}
                       </div>
-                      <p className="mt-1.5 text-micro text-mvj-muted/75">Always taken from the student's own record — cannot be changed here.</p>
+                      <p className="mt-1.5 text-micro text-brand-muted/75">Always taken from the student's own record — cannot be changed here.</p>
                     </div>
 
                     <Input
@@ -266,21 +279,10 @@ export function IssueDegreePage() {
                         B.E. Electrical and Electronics Engineering
                       </option>
                     </Select>
-
-                    <Input
-                      label="Certificate PDF"
-                      type="file"
-                      name="file"
-                      accept="application/pdf"
-                      onChange={handleFileChange}
-                      hint="Only PDF files are accepted (max 5MB)."
-                      containerClassName="md:col-span-2"
-                      required
-                    />
                   </div>
 
                   {error && (
-                    <Alert variant="error" title="Could not issue certificate">
+                    <Alert variant="error" title="Something went wrong">
                       {error}
                     </Alert>
                   )}
@@ -299,6 +301,9 @@ export function IssueDegreePage() {
                       )}
                     </Button>
 
+                    <Button type="button" variant="outline" size="lg" loading={isPreviewing} onClick={handlePreview}>
+                      Preview certificate
+                    </Button>
                     <Button type="button" variant="outline" size="lg" onClick={() => navigate('/admin/issued-certificates')}>
                       View Certificates
                     </Button>
@@ -312,7 +317,7 @@ export function IssueDegreePage() {
                       <div className="mt-2 space-y-3 text-caption">
                         <p className="text-green-700">
                           The certificate for <span className="font-medium">{issuedCertificate.studentName}</span> (
-                          {issuedCertificate.studentUsn}) has been created and the signed PDF has been secured — a
+                          {issuedCertificate.studentUsn}) has been created and the certificate PDF has been generated and secured — a
                           verification QR code was generated and stamped onto the document.
                         </p>
                         <p className="text-green-700">

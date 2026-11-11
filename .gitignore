@@ -31,3 +31,9 @@ dist-ssr
 
 # Maven build output
 backend/target/
+
+# Simulated registry (SQLite) — local demo data, never committed
+backend/data/
+*.db
+*.db-wal
+*.db-shm

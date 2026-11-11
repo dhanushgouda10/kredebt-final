@@ -85,7 +85,53 @@ public class BlockchainVerificationService {
     }
 
     /** Confirms a transaction hash really is a successful call into our contract, from the authorized admin wallet. */
+    /** The configured contract address (lower-case), or empty if blockchain verification is not configured. */
+    public String contractAddress() {
+        return contractAddress;
+    }
+
+    /**
+     * After the transaction itself has been verified, reads the credential back from the contract and
+     * checks it is really the one the administrator claims: same certificate id, same SHA-256 hash and
+     * same student wallet. Without this the backend would trust a client-supplied tokenId / hash.
+     */
+    public void verifyIssuedCredential(long tokenId, String certificateId, String certificateHash, String studentWallet) {
+        OnChainCredential onChain = readCredential(tokenId).orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.BAD_GATEWAY,
+                "Could not read credential #" + tokenId + " from the blockchain to confirm it. Please try again in a moment."));
+        if (!onChain.certificateId().equalsIgnoreCase(certificateId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "On-chain token " + tokenId + " belongs to a different certificate");
+        }
+        if (!onChain.certificateHash().equalsIgnoreCase(certificateHash)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "On-chain hash does not match the stored SHA-256 hash of this certificate");
+        }
+        if (!onChain.studentWallet().equalsIgnoreCase(studentWallet)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "On-chain student wallet does not match this student's wallet on file");
+        }
+        if (onChain.revoked()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "This credential is already revoked on-chain");
+        }
+    }
+
+    /** After a revoke transaction: the credential must really be revoked on-chain. */
+    public void verifyRevokedOnChain(long tokenId) {
+        OnChainCredential onChain = readCredential(tokenId).orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.BAD_GATEWAY,
+                "Could not read credential #" + tokenId + " from the blockchain to confirm the revocation. Please try again in a moment."));
+        if (!onChain.revoked()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "The blockchain does not show this credential as revoked");
+        }
+    }
+
     public void verifyContractTransaction(String transactionHash) {
+        verifyContractTransaction(transactionHash, null);
+    }
+
+    /**
+     * @param expectedSender the wallet that must have sent the transaction — the signed-in institution's
+     *                       linked wallet. When null/blank, falls back to blockchain.admin-wallet-address.
+     */
+    public void verifyContractTransaction(String transactionHash, String expectedSender) {
         if (!configured) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
                     "Blockchain is not configured on the server (BLOCKCHAIN_RPC_URL / SMART_CONTRACT_ADDRESS missing)");
@@ -109,11 +155,14 @@ public class BlockchainVerificationService {
                     "That transaction was not sent to the SkillChain smart contract");
         }
 
-        if (!adminWalletAddress.isBlank()) {
+        String requiredSender = (expectedSender != null && !expectedSender.isBlank())
+                ? expectedSender.toLowerCase()
+                : adminWalletAddress;
+        if (!requiredSender.isBlank()) {
             String from = receipt.getFrom() == null ? "" : receipt.getFrom().toLowerCase();
-            if (!from.equals(adminWalletAddress)) {
+            if (!from.equals(requiredSender)) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                        "That transaction was not sent from the authorized admin wallet");
+                        "That transaction was not sent from your institution's linked wallet");
             }
         }
     }

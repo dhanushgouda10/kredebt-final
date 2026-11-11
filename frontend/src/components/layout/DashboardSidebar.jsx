@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
+import { KredentMark } from '../brand/KredentLogo'
+import { useAuth } from '../../context/useAuth'
 
 const links = [
   {
@@ -42,14 +44,30 @@ const links = [
 ]
 
 function SidebarNav({ onNavigate }) {
+  const { institution, logout } = useAuth()
   return (
     <>
-      <div className="mb-8 flex items-center gap-3 px-2">
-        <img src="/MVJCE_-_New_Logo.png" alt="Kredent logo" className="h-9 w-9 object-contain" />
-        <div>
-          <p className="heading-serif text-h3 leading-tight">Kredent</p>
-          <p className="text-micro tracking-wide text-white/60">Admin Portal</p>
+      <div className="mb-8 px-2">
+        <div className="flex items-center gap-3">
+          <KredentMark className="h-9 w-9" />
+          <div>
+            <p className="heading-serif text-h3 leading-tight">Kredent</p>
+            <p className="text-micro tracking-wide text-white/60">Admin Portal</p>
+          </div>
         </div>
+        {institution && (
+          <div className="mt-6 rounded-xl border border-white/10 bg-white/10 px-4 py-3">
+            <p className="text-micro uppercase tracking-wider text-white/55">Signed in as</p>
+            <p className="mt-1 text-caption font-semibold leading-snug">{institution.name}</p>
+            <p className="mt-0.5 text-micro text-white/60">
+              {institution.district}, {institution.state}
+            </p>
+            <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-400/15 px-2 py-0.5 text-micro font-semibold text-emerald-200">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" aria-hidden="true" />
+              Verified institution
+            </p>
+          </div>
+        )}
       </div>
       <nav className="space-y-1.5">
         {links.map((link) => (
@@ -60,7 +78,7 @@ function SidebarNav({ onNavigate }) {
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-lg px-4 py-3 text-caption font-semibold transition ${
                 isActive
-                  ? 'bg-kredent-accent text-white shadow-md'
+                  ? 'bg-brand-accent text-white shadow-md'
                   : 'text-white/80 hover:bg-white/10 hover:text-white'
               }`
             }
@@ -70,8 +88,30 @@ function SidebarNav({ onNavigate }) {
           </NavLink>
         ))}
       </nav>
-      <div className="mt-auto pt-6 text-micro text-white/40">Kredent · MVJCE Blockchain System</div>
+      <div className="mt-auto space-y-3 pt-6">
+        <button
+          type="button"
+          onClick={logout}
+          className="w-full rounded-lg border border-white/15 px-4 py-2.5 text-caption font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+        >
+          Sign out
+        </button>
+        <p className="text-micro text-white/40">Kredent · Academic Credential Platform</p>
+      </div>
     </>
+  )
+}
+
+function MobileBarBrand() {
+  const { institution } = useAuth()
+  return (
+    <div className="flex min-w-0 items-center gap-2.5">
+      <KredentMark className="h-8 w-8" />
+      <div className="min-w-0">
+        <p className="heading-serif text-body-l leading-tight">Kredent Admin</p>
+        {institution && <p className="truncate text-micro leading-tight text-white/65">{institution.name}</p>}
+      </div>
+    </div>
   )
 }
 
@@ -89,11 +129,8 @@ export function DashboardSidebar() {
   return (
     <>
       {/* Mobile top bar */}
-      <div className="flex items-center justify-between bg-kredent-navy px-4 py-3 text-white md:hidden">
-        <div className="flex items-center gap-2.5">
-          <img src="/MVJCE_-_New_Logo.png" alt="Kredent logo" className="h-8 w-8 object-contain" />
-          <p className="heading-serif text-body-l leading-tight">Kredent Admin</p>
-        </div>
+      <div className="flex items-center justify-between bg-brand-primary px-4 py-3 text-white md:hidden">
+        <MobileBarBrand />
         <button
           type="button"
           onClick={() => setIsOpen(true)}
@@ -108,7 +145,7 @@ export function DashboardSidebar() {
       </div>
 
       {/* Desktop permanent sidebar */}
-      <aside className="hidden min-h-full flex-col bg-kredent-navy px-4 py-6 text-white md:flex md:w-64 md:flex-shrink-0">
+      <aside className="hidden min-h-full flex-col bg-brand-primary px-4 py-6 text-white md:flex md:w-64 md:flex-shrink-0">
         <SidebarNav />
       </aside>
 
@@ -129,7 +166,7 @@ export function DashboardSidebar() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 240 }}
-              className="fixed left-0 top-0 flex h-full w-72 max-w-[80vw] flex-col bg-kredent-navy px-4 py-6 text-white shadow-2xl"
+              className="fixed left-0 top-0 flex h-full w-72 max-w-[80vw] flex-col bg-brand-primary px-4 py-6 text-white shadow-2xl"
               role="dialog"
               aria-modal="true"
               aria-label="Admin navigation"

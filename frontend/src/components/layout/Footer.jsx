@@ -1,38 +1,42 @@
+import { Link } from 'react-router-dom'
+import { KredentMark, BRAND_NAME, BRAND_TAGLINE } from '../brand/KredentLogo'
 
 /**
- * Institutional footer — MVJCE three-zone architecture.
+ * Platform footer — three-zone architecture.
  *
- * Zone A: Charcoal rail with institutional mark and labeled contact blocks
- * Zone B: Navy body with three link columns (Platform, Verify, College)
- * Zone C: Blush highlight strip with admissions line and social icons
+ * Zone A: Charcoal rail with the Kredent mark and short platform notes
+ * Zone B: Navy body with link columns
+ * Zone C: Blush strip with the registry independence note
  */
-const admissionsLinks = [
-  { label: 'Admission Procedure', href: 'https://mvjce.edu.in/admissions/admission-procedure/' },
-  { label: 'Programmes', href: 'https://mvjce.edu.in/programmes/' },
-  { label: 'Scholarships', href: 'https://mvjce.edu.in/admissions/scholarships/' },
-  { label: 'Fee Structure', href: 'https://mvjce.edu.in/admissions/fee-structure/' },
+const columns = [
+  {
+    title: 'Verify',
+    links: [
+      { label: 'Verify a Certificate', to: '/verify' },
+    ],
+  },
+  {
+    title: 'Institutions',
+    links: [
+      { label: 'Verify Your Institution', to: '/admin/login' },
+      { label: 'Register College', to: '/registry/register', newTab: true },
+    ],
+  },
+  {
+    title: 'Students',
+    links: [
+      { label: 'Student Sign In', to: '/login' },
+      { label: 'My Certificates', to: '/student/certificates' },
+    ],
+  },
+  {
+    title: 'Network',
+    links: [{ label: 'Polygon Amoy Explorer', href: 'https://amoy.polygonscan.com/' }],
+  },
 ]
 
-const campusLifeLinks = [
-  { label: 'Facilities', href: 'https://mvjce.edu.in/campus-life/facilities/' },
-  { label: 'Technical Clubs', href: 'https://mvjce.edu.in/campus-life/technical-clubs/' },
-  { label: 'Sports', href: 'https://mvjce.edu.in/campus-life/sports/' },
-  { label: 'Events', href: 'https://mvjce.edu.in/all-events/' },
-]
-
-const keyLinks = [
-  { label: 'About MVJCE', href: 'https://mvjce.edu.in/about-us/about-mvjce/' },
-  { label: 'Board of Governors', href: 'https://mvjce.edu.in/about-us/board-of-governors/' },
-  { label: 'Placements', href: 'https://mvjce.edu.in/admissions/placements/' },
-  { label: 'Contact', href: 'https://mvjce.edu.in/contact-us/' },
-]
-
-const researchLinks = [
-  { label: 'Research Centres', href: 'https://mvjce.edu.in/research-centres/' },
-  { label: 'Publications', href: 'https://mvjce.edu.in/research-publications/' },
-  { label: 'Projects', href: 'https://mvjce.edu.in/research-projects/' },
-  { label: 'Conferences', href: 'https://mvjce.edu.in/conferences/' },
-]
+const linkClass =
+  'text-caption text-white/80 transition-colors hover:text-white hover:underline decoration-[#F7941D] underline-offset-2'
 
 export function Footer() {
   return (
@@ -41,48 +45,23 @@ export function Footer() {
         <div className="grid lg:grid-cols-[23%_1fr]">
           {/* Zone A: Charcoal rail */}
           <div className="bg-[#231F20] p-8 lg:p-10">
-            <div className="flex items-center gap-3 mb-6">
-              <img
-                src="/MVJCE_-_New_Logo.png"
-                alt=""
-                className="h-14 w-14 rounded-lg bg-surface-raised object-contain p-1.5"
-              />
+            <div className="mb-6 flex items-center gap-3">
+              <KredentMark className="h-14 w-14" />
               <div>
-                <p className="heading-serif text-body-l font-bold leading-tight text-white">MVJ College of Engineering</p>
-                <p className="text-micro text-white/70 leading-tight">Engineering A Better Tomorrow</p>
-                <p className="text-micro text-white/60 leading-tight">An Autonomous Institution</p>
+                <p className="heading-serif text-body-l font-bold leading-tight text-white">{BRAND_NAME}</p>
+                <p className="text-micro leading-tight text-white/70">Academic credential platform</p>
               </div>
             </div>
 
             <div className="space-y-5">
               <div>
-                <h3 className="text-label font-bold uppercase tracking-[0.22em] text-[#E9B949] mb-2">Address</h3>
-                <p className="text-caption leading-relaxed text-white/90">
-                  MVJ College of Engineering, Near ITPB, Whitefield, Bangalore-560 067
-                </p>
+                <h3 className="text-label mb-2 font-bold uppercase tracking-[0.22em] text-[#E9B949]">About</h3>
+                <p className="text-caption leading-relaxed text-white/90">{BRAND_TAGLINE}</p>
               </div>
-
               <div>
-                <h3 className="text-label font-bold uppercase tracking-[0.22em] text-[#E9B949] mb-2">Contact</h3>
+                <h3 className="text-label mb-2 font-bold uppercase tracking-[0.22em] text-[#E9B949]">Issuance</h3>
                 <p className="text-caption leading-relaxed text-white/90">
-                  Board Line <a href="tel:+918042991000" className="hover:text-white underline decoration-[#F7941D] underline-offset-2">+91 80 4299 1000</a>
-                  <br />
-                  Reception <a href="tel:+918042991007" className="hover:text-white underline decoration-[#F7941D] underline-offset-2">+91 80 4299 1007</a>
-                  <br />
-                  Placement <a href="tel:+918042991030" className="hover:text-white underline decoration-[#F7941D] underline-offset-2">+91 80 4299 1030</a>
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-label font-bold uppercase tracking-[0.22em] text-[#E9B949] mb-2">Mail Us At</h3>
-                <p className="text-caption leading-relaxed text-white/90">
-                  <a href="mailto:helpdesk@mvjce.edu.in" className="hover:text-white underline decoration-[#F7941D] underline-offset-2">
-                    helpdesk@mvjce.edu.in
-                  </a>
-                  <br />
-                  <a href="mailto:admissions@mvjce.edu.in" className="hover:text-white underline decoration-[#F7941D] underline-offset-2">
-                    admissions@mvjce.edu.in
-                  </a>
+                  Certificates are issued by verified institutions and recorded on the Polygon network.
                 </p>
               </div>
             </div>
@@ -90,171 +69,38 @@ export function Footer() {
 
           {/* Zone B: Navy link columns */}
           <div className="p-8 lg:p-10 lg:pl-12">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
-              {/* Admissions column */}
-              <div>
-                <h3 className="text-micro font-bold uppercase tracking-[0.16em] text-white mb-4">Admissions</h3>
-                <ul className="space-y-2.5">
-                  {admissionsLinks.map((link) => (
-                    <li key={link.label}>
-                      <a
-                        href={link.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-caption text-white/80 transition-colors hover:text-white hover:underline decoration-[#F7941D] underline-offset-2 inline-flex items-center gap-1.5"
-                      >
-                        {link.label}
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Campus Life column */}
-              <div>
-                <h3 className="text-micro font-bold uppercase tracking-[0.16em] text-white mb-4">Campus Life</h3>
-                <ul className="space-y-2.5">
-                  {campusLifeLinks.map((link) => (
-                    <li key={link.label}>
-                      <a
-                        href={link.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-caption text-white/80 transition-colors hover:text-white hover:underline decoration-[#F7941D] underline-offset-2 inline-flex items-center gap-1.5"
-                      >
-                        {link.label}
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Key Links column */}
-              <div>
-                <h3 className="text-micro font-bold uppercase tracking-[0.16em] text-white mb-4">Key Links</h3>
-                <ul className="space-y-2.5">
-                  {keyLinks.map((link) => (
-                    <li key={link.label}>
-                      <a
-                        href={link.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-caption text-white/80 transition-colors hover:text-white hover:underline decoration-[#F7941D] underline-offset-2 inline-flex items-center gap-1.5"
-                      >
-                        {link.label}
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Research Centres column */}
-              <div>
-                <h3 className="text-micro font-bold uppercase tracking-[0.16em] text-white mb-4">Research Centres</h3>
-                <ul className="space-y-2.5">
-                  {researchLinks.map((link) => (
-                    <li key={link.label}>
-                      <a
-                        href={link.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-caption text-white/80 transition-colors hover:text-white hover:underline decoration-[#F7941D] underline-offset-2 inline-flex items-center gap-1.5"
-                      >
-                        {link.label}
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-10">
+              {columns.map((col) => (
+                <div key={col.title}>
+                  <h3 className="mb-4 text-micro font-bold uppercase tracking-[0.16em] text-white">{col.title}</h3>
+                  <ul className="space-y-2.5">
+                    {col.links.map((link) => (
+                      <li key={link.label}>
+                        {link.to ? (
+                          <Link to={link.to} className={linkClass} {...(link.newTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+                            {link.label}
+                          </Link>
+                        ) : (
+                          <a href={link.href} target="_blank" rel="noreferrer" className={linkClass}>
+                            {link.label}
+                          </a>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
         {/* Zone C: Blush highlight strip */}
-        <div className="bg-[#FCEAEA] border-t border-dashed border-[#CE2A26]">
-          <div className="mx-auto max-w-[1200px] px-5 py-4 lg:px-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <a href="tel:+918150811811" className="text-[#CE2A26] font-semibold text-caption hover:underline">
-              For Admissions: +91 81 508 11 811
-            </a>
-            <div className="flex items-center gap-3">
-              {/* Social icons */}
-              <a
-                href="https://www.facebook.com/mvjce.official"
-                target="_blank"
-                rel="noreferrer"
-                className="w-9 h-9 rounded-full bg-[#CE2A26] text-white flex items-center justify-center hover:bg-[#0E2A5C] transition-colors"
-                aria-label="Facebook"
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-              </a>
-              <a
-                href="https://twitter.com/mvjce_official"
-                target="_blank"
-                rel="noreferrer"
-                className="w-9 h-9 rounded-full bg-[#CE2A26] text-white flex items-center justify-center hover:bg-[#0E2A5C] transition-colors"
-                aria-label="Twitter"
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                </svg>
-              </a>
-              <a
-                href="https://www.instagram.com/mvjce_official"
-                target="_blank"
-                rel="noreferrer"
-                className="w-9 h-9 rounded-full bg-[#CE2A26] text-white flex items-center justify-center hover:bg-[#0E2A5C] transition-colors"
-                aria-label="Instagram"
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                </svg>
-              </a>
-              <a
-                href="https://www.linkedin.com/school/mvjce/"
-                target="_blank"
-                rel="noreferrer"
-                className="w-9 h-9 rounded-full bg-[#CE2A26] text-white flex items-center justify-center hover:bg-[#0E2A5C] transition-colors"
-                aria-label="LinkedIn"
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                </svg>
-              </a>
-              <a
-                href="https://www.youtube.com/@mvjceofficial"
-                target="_blank"
-                rel="noreferrer"
-                className="w-9 h-9 rounded-full bg-[#CE2A26] text-white flex items-center justify-center hover:bg-[#0E2A5C] transition-colors"
-                aria-label="YouTube"
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                </svg>
-              </a>
-            </div>
-          </div>
-        </div>
-
-        {/* Copyright bar */}
-        <div className="bg-[#081E45] border-t border-white/10">
-          <div className="mx-auto max-w-[1200px] px-5 py-4 lg:px-10">
-            <p className="text-micro text-white/50">
-              © {new Date().getFullYear()} MVJ College of Engineering. All rights reserved.
+        <div className="border-t border-dashed border-[#CE2A26] bg-[#FCEAEA]">
+          <div className="mx-auto flex max-w-[1200px] flex-col items-center justify-between gap-2 px-5 py-4 text-center sm:flex-row sm:text-left lg:px-10">
+            <p className="text-caption font-semibold text-[#CE2A26]">
+              Kredent’s institutional registry is independent and is not affiliated with AICTE or any regulator.
             </p>
+            <p className="text-caption text-[#5A6B84]">&copy; {new Date().getFullYear()} {BRAND_NAME}</p>
           </div>
         </div>
       </div>

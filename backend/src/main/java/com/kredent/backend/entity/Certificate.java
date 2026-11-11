@@ -44,6 +44,14 @@ public class Certificate {
     @JoinColumn(name = "issued_by_admin_id", nullable = false)
     private Admin issuedByAdmin;
 
+    /**
+     * The institution that issued this certificate (shown on public verification). Nullable only
+     * because certificates created before multi-institution support have none.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "institution_id")
+    private Institution institution;
+
     @Column(name = "degree_name", nullable = false)
     private String degreeName;
 
@@ -157,6 +165,14 @@ public class Certificate {
 
     public void setIssuedByAdmin(Admin issuedByAdmin) {
         this.issuedByAdmin = issuedByAdmin;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
     public String getDegreeName() {

@@ -75,7 +75,7 @@ public class AdminNonceService {
         // Human-readable on purpose. MetaMask shows this text verbatim; an opaque blob
         // trains administrators to approve signature prompts without reading them.
         String message = """
-                Sign in to Kredent as an MVJ College of Engineering administrator.
+                Sign in to Kredent as a college administrator.
 
                 This signature proves you control this wallet. It does not authorise \
                 any blockchain transaction and costs no gas.

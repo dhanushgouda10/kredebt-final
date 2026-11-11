@@ -32,7 +32,7 @@ public class AdminSeeder implements CommandLineRunner {
     public AdminSeeder(
             AdminRepository adminRepository,
             @Value("${admin.seed.email:}") String seedEmail,
-            @Value("${admin.seed.full-name:MVJCE Admin}") String seedFullName,
+            @Value("${admin.seed.full-name:Kredent Admin}") String seedFullName,
             @Value("${admin.seed.wallet-address:}") String seedWallet) {
         this.adminRepository = adminRepository;
         this.seedEmail = seedEmail;

@@ -1,3 +1,5 @@
+> **Note (Nov 2026):** the MVJCE-specific branding and `@mvjce.edu.in` restriction described below were removed when Kredent became institution-neutral. See README "Institution verification & demo registry".
+
 # Kredent — Project Status
 
 Where the project stands, what has been built, what is verified, and what is left.

@@ -98,7 +98,7 @@ export function Modal({ open, onClose, title, children, size = 'lg' }) {
             onClick={(e) => e.stopPropagation()}
           >
             {title && (
-              <div className="flex items-center justify-between bg-mvj-navy p-6 text-white">
+              <div className="flex items-center justify-between bg-brand-primary p-6 text-white">
                 <h3 id="modal-title" className="heading-serif text-h3 text-white">
                   {title}
                 </h3>

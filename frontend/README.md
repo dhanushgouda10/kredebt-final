@@ -1,4 +1,4 @@
-# Kredent — MVJCE Blockchain Degree Verification (Frontend)
+# Kredent — Blockchain Academic Credentials (Frontend)
 
 React + Vite + Tailwind frontend for the Kredent blockchain-based digital degree
 certificate system. Students view their certificates, admins issue/revoke them

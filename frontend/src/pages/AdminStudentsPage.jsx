@@ -22,7 +22,7 @@ import {
   updateStudent,
 } from '../services/adminStudentService'
 import { listDepartments } from '../services/departmentService'
-import { normalizeEmail, validateCollegeEmail } from '../utils/collegeEmail'
+import { normalizeEmail, validateEmail } from '../utils/email'
 
 const PAGE_SIZE = 15
 
@@ -173,7 +173,7 @@ export function AdminStudentsPage() {
 
     // Institutional email rule — checked here for immediate feedback. The backend
     // re-validates on RegisterRequest, which is the actual enforcement point.
-    const emailError = validateCollegeEmail(createForm.email)
+    const emailError = validateEmail(createForm.email)
     if (emailError) {
       setCreateError(emailError)
       return
@@ -298,8 +298,8 @@ export function AdminStudentsPage() {
             onClick={() => selectDepartment('')}
             className={`rounded-md border px-4 py-2.5 text-caption font-medium transition ${
               selectedDepartment === ''
-                ? 'border-kredent-navy bg-kredent-navy text-white'
-                : 'border-surface-line bg-surface-raised text-mvj-muted hover:border-kredent-navy/50'
+                ? 'border-brand-primary bg-brand-primary text-white'
+                : 'border-surface-line bg-surface-raised text-brand-muted hover:border-brand-primary/50'
             }`}
           >
             All Departments
@@ -311,8 +311,8 @@ export function AdminStudentsPage() {
               onClick={() => selectDepartment(dept.code)}
               className={`rounded-md border px-4 py-2.5 text-caption font-medium transition ${
                 selectedDepartment === dept.code
-                  ? 'border-kredent-accent bg-kredent-accent text-white'
-                  : 'border-surface-line bg-surface-raised text-mvj-muted hover:border-kredent-accent/50'
+                  ? 'border-brand-accent bg-brand-accent text-white'
+                  : 'border-surface-line bg-surface-raised text-brand-muted hover:border-brand-accent/50'
               }`}
             >
               {dept.code} <span className="opacity-70">({dept.studentCount})</span>
@@ -369,13 +369,13 @@ export function AdminStudentsPage() {
               <table className="w-full">
                 <thead className="border-b border-surface-line bg-surface-sunken">
                   <tr>
-                    <th className="px-6 py-5 text-left text-label text-mvj-muted">Student</th>
-                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">USN</th>
-                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Department</th>
-                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Contact</th>
-                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Wallet</th>
-                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Joined</th>
-                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Actions</th>
+                    <th className="px-6 py-5 text-left text-label text-brand-muted">Student</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">USN</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">Department</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">Contact</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">Wallet</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">Joined</th>
+                    <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-surface-line">
@@ -398,36 +398,36 @@ export function AdminStudentsPage() {
                         onClick={() => openDetail(student)}
                       >
                         <td className="px-6 py-5">
-                          <p className="text-caption font-medium text-mvj-ink">{student.fullName}</p>
-                          <p className="text-micro text-mvj-muted/75">{student.email}</p>
+                          <p className="text-caption font-medium text-brand-ink">{student.fullName}</p>
+                          <p className="text-micro text-brand-muted/75">{student.email}</p>
                         </td>
                         <td className="px-6 py-5">
-                          <code className="rounded bg-surface-sunken px-2 py-1 font-mono text-micro text-mvj-muted">{student.usn}</code>
+                          <code className="rounded bg-surface-sunken px-2 py-1 font-mono text-micro text-brand-muted">{student.usn}</code>
                         </td>
                         <td className="px-6 py-5">
                           <Badge variant="info">{student.department}</Badge>
                         </td>
-                        <td className="px-6 py-5 text-caption text-mvj-muted">{student.phone || '—'}</td>
+                        <td className="px-6 py-5 text-caption text-brand-muted">{student.phone || '—'}</td>
                         <td className="px-6 py-5">
                           {student.walletAddress ? (
                             <code
-                              className="rounded bg-surface-sunken px-2 py-1 font-mono text-micro text-mvj-muted"
+                              className="rounded bg-surface-sunken px-2 py-1 font-mono text-micro text-brand-muted"
                               title={student.walletAddress}
                             >
                               {truncateWallet(student.walletAddress)}
                             </code>
                           ) : (
-                            <span className="text-caption text-mvj-muted/75">Not assigned</span>
+                            <span className="text-caption text-brand-muted/75">Not assigned</span>
                           )}
                         </td>
-                        <td className="px-6 py-5 text-caption text-mvj-muted">{formatDate(student.createdAt)}</td>
+                        <td className="px-6 py-5 text-caption text-brand-muted">{formatDate(student.createdAt)}</td>
                         <td className="px-6 py-5">
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
                               openEdit(student)
                             }}
-                            className="rounded text-caption font-medium text-kredent-accent transition-colors hover:text-orange-700"
+                            className="rounded text-caption font-medium text-brand-accent transition-colors hover:text-orange-700"
                           >
                             Edit
                           </button>
@@ -534,49 +534,49 @@ export function AdminStudentsPage() {
           <div className="space-y-5 p-6">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-caption text-mvj-muted">Full Name</p>
-                <p className="font-semibold text-mvj-ink">{detailStudent.fullName}</p>
+                <p className="text-caption text-brand-muted">Full Name</p>
+                <p className="font-semibold text-brand-ink">{detailStudent.fullName}</p>
               </div>
               <div>
-                <p className="text-caption text-mvj-muted">USN</p>
-                <p className="font-mono text-caption text-mvj-ink">{detailStudent.usn}</p>
+                <p className="text-caption text-brand-muted">USN</p>
+                <p className="font-mono text-caption text-brand-ink">{detailStudent.usn}</p>
               </div>
               <div>
-                <p className="text-caption text-mvj-muted">Department</p>
+                <p className="text-caption text-brand-muted">Department</p>
                 <Badge variant="info">{detailStudent.department}</Badge>
               </div>
               <div>
-                <p className="text-caption text-mvj-muted">Joined</p>
-                <p className="font-semibold text-mvj-ink">{formatDate(detailStudent.createdAt)}</p>
+                <p className="text-caption text-brand-muted">Joined</p>
+                <p className="font-semibold text-brand-ink">{formatDate(detailStudent.createdAt)}</p>
               </div>
               <div>
-                <p className="text-caption text-mvj-muted">Email</p>
-                <p className="text-caption text-mvj-ink">{detailStudent.email}</p>
+                <p className="text-caption text-brand-muted">Email</p>
+                <p className="text-caption text-brand-ink">{detailStudent.email}</p>
               </div>
               <div>
-                <p className="text-caption text-mvj-muted">Phone</p>
-                <p className="text-caption text-mvj-ink">{detailStudent.phone || '—'}</p>
+                <p className="text-caption text-brand-muted">Phone</p>
+                <p className="text-caption text-brand-ink">{detailStudent.phone || '—'}</p>
               </div>
               <div className="sm:col-span-2">
-                <p className="text-caption text-mvj-muted">System-managed Wallet</p>
+                <p className="text-caption text-brand-muted">System-managed Wallet</p>
                 <div className="flex items-start justify-between gap-2">
-                  <p className="break-all font-mono text-micro text-mvj-ink">{detailStudent.walletAddress || 'Not assigned'}</p>
+                  <p className="break-all font-mono text-micro text-brand-ink">{detailStudent.walletAddress || 'Not assigned'}</p>
                   {detailStudent.walletAddress && <CopyButton value={detailStudent.walletAddress} label="wallet address" />}
                 </div>
               </div>
             </div>
 
             <div className="border-t border-surface-line pt-4">
-              <p className="mb-3 text-caption font-semibold text-mvj-muted">Certificates</p>
+              <p className="mb-3 text-caption font-semibold text-brand-muted">Certificates</p>
               {detailError && (
                 <Alert variant="error" className="mb-3">
                   {detailError}
                 </Alert>
               )}
               {detailLoading ? (
-                <p className="text-caption text-mvj-muted/75">Loading…</p>
+                <p className="text-caption text-brand-muted/75">Loading…</p>
               ) : detailCertificates.length === 0 ? (
-                <p className="text-caption text-mvj-muted/75">No certificates issued to this student yet.</p>
+                <p className="text-caption text-brand-muted/75">No certificates issued to this student yet.</p>
               ) : (
                 <ul className="space-y-2">
                   {detailCertificates.map((cert) => (
@@ -585,8 +585,8 @@ export function AdminStudentsPage() {
                       className="flex items-center justify-between rounded-lg border border-surface-line px-4 py-3"
                     >
                       <div>
-                        <p className="text-caption font-medium text-mvj-ink">{cert.degreeName}</p>
-                        <code className="text-micro text-mvj-muted/75">{cert.certificateNumber}</code>
+                        <p className="text-caption font-medium text-brand-ink">{cert.degreeName}</p>
+                        <code className="text-micro text-brand-muted/75">{cert.certificateNumber}</code>
                       </div>
                       <Badge variant={statusMeta(cert.status).variant}>{statusMeta(cert.status).label}</Badge>
                     </li>

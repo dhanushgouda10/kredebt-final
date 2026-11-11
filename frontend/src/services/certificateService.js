@@ -52,6 +52,19 @@ export async function uploadCertificateFile(certificateId, file) {
   return res.json()
 }
 
+// POST /api/admin/certificates/{id}/generate — the backend draws the standard certificate from
+// the student's record (college name, student, degree, QR), then hashes and stores it.
+export async function generateCertificateFile(certificateId) {
+  const res = await fetch(`${API_BASE}/api/admin/certificates/${certificateId}/generate`, {
+    method: 'POST',
+    headers: authHeaders(),
+  })
+  if (!res.ok) {
+    throw new Error(await parseErrorMessage(res))
+  }
+  return res.json()
+}
+
 // GET /api/admin/certificates?search=&department=&year=&status=&page=&size= — the Certificate
 // Registry. department/year/status are each optional; when any is set, filtering happens
 // server-side (CertificateService.listFiltered on the backend) so this never needs to fetch more
@@ -129,6 +142,42 @@ export async function downloadCertificateFile(certificateId, suggestedFilename) 
   link.click()
   link.remove()
   window.URL.revokeObjectURL(url)
+}
+
+// DELETE /api/admin/certificates/{id} — removes a certificate record that has not been issued
+// on-chain yet (used to clean up when generating its PDF fails).
+export async function deleteCertificateDraft(certificateId) {
+  const res = await fetch(`${API_BASE}/api/admin/certificates/${certificateId}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  })
+  if (!res.ok) {
+    throw new Error(await parseErrorMessage(res))
+  }
+}
+
+// GET /api/admin/certificate-preview — a watermarked sample of the standard certificate for the
+// admin's own college. Nothing is created. The tab is opened synchronously (inside the click) so
+// popup blockers allow it, then pointed at the PDF once it has loaded.
+export async function openSampleCertificate() {
+  const tab = window.open('', '_blank')
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/certificate-preview`, { headers: authHeaders() })
+    if (!res.ok) {
+      throw new Error(await parseErrorMessage(res))
+    }
+    const blob = await res.blob()
+    const url = window.URL.createObjectURL(blob)
+    if (tab) {
+      tab.location.href = url
+    } else {
+      window.location.assign(url)
+    }
+    setTimeout(() => window.URL.revokeObjectURL(url), 60_000)
+  } catch (err) {
+    if (tab) tab.close()
+    throw err
+  }
 }
 
 // POST /api/admin/certificates/{id}/blockchain/issue — called AFTER MetaMask has already

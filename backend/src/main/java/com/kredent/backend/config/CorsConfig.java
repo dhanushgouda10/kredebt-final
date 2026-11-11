@@ -21,7 +21,8 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
-    private static final List<String> DEFAULT_ORIGINS = List.of("http://localhost:3000", "http://localhost:5173");
+    private static final List<String> DEFAULT_ORIGINS = List.of(
+            "http://localhost:3000", "http://localhost:5173", "http://localhost:5174", "http://localhost:5175");
 
     @Bean
     public CorsFilter corsFilter(@Value("${cors.allowed-origins:}") String extraOrigins) {
@@ -36,7 +37,7 @@ public class CorsConfig {
         return new CorsFilter(source);
     }
 
-    /** Always includes the two default localhost origins, plus any extra ones from CORS_ALLOWED_ORIGINS (comma-separated, blank/duplicate entries ignored). */
+    /** Always includes the default local dev origins (Vite moves to 5174/5175 when 5173 is busy), plus any extra ones from CORS_ALLOWED_ORIGINS (comma-separated, blank/duplicate entries ignored). */
     private static List<String> resolveAllowedOrigins(String extraOrigins) {
         if (extraOrigins == null || extraOrigins.isBlank()) {
             return DEFAULT_ORIGINS;

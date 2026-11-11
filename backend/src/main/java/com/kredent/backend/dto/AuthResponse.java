@@ -7,6 +7,8 @@ public class AuthResponse {
     private Long id;
     private String fullName;
     private String email;
+    /** Set for college-administrator sessions only; null for students. */
+    private InstitutionSummary institution;
 
     public AuthResponse(String token, String role, Long id, String fullName, String email) {
         this.token = token;
@@ -54,5 +56,13 @@ public class AuthResponse {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public InstitutionSummary getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(InstitutionSummary institution) {
+        this.institution = institution;
     }
 }

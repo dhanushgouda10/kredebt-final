@@ -3,6 +3,7 @@ package com.kredent.backend.service;
 import com.kredent.backend.dto.AdminWalletLoginRequest;
 import com.kredent.backend.dto.AuthResponse;
 import com.kredent.backend.entity.Admin;
+import com.kredent.backend.entity.Institution;
 import com.kredent.backend.repository.AdminRepository;
 import com.kredent.backend.security.JwtService;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +33,7 @@ class AdminAuthServiceTest {
     private AdminRepository adminRepository;
     private JwtService jwtService;
     private AdminNonceService nonceService;
+    private InstitutionAccessService institutionAccessService;
     private AdminAuthService service;
 
     private ECKeyPair adminKeyPair;
@@ -43,23 +45,37 @@ class AdminAuthServiceTest {
         jwtService = mock(JwtService.class);
         nonceService = new AdminNonceService();
 
+        institutionAccessService = mock(InstitutionAccessService.class);
+
         service = new AdminAuthService(
                 adminRepository,
                 jwtService,
                 nonceService,
-                new WalletSignatureVerifier()
+                new WalletSignatureVerifier(),
+                institutionAccessService
         );
 
         adminKeyPair = Keys.createEcKeyPair();
         adminAddress = "0x" + Keys.getAddress(adminKeyPair);
 
-        when(jwtService.generateToken(anyString(), anyString(), anyLong()))
+        // An onboarded, still-approved institution whose linked wallet is the admin's wallet.
+        Institution institution = new Institution();
+        institution.setId(7L);
+        institution.setRegistryInstitutionId("DEMO-1001");
+        institution.setName("Greenfield Institute of Technology");
+        institution.setState("Karnataka");
+        institution.setDistrict("Bengaluru Urban");
+        institution.setVerified(true);
+        institution.setWalletAddress(adminAddress);
+        when(institutionAccessService.requireActiveByRegistryId(anyString())).thenReturn(institution);
+
+        when(jwtService.generateToken(anyString(), anyString(), anyLong(), anyLong()))
                 .thenReturn("test-jwt");
 
         Admin admin = new Admin();
         admin.setId(1L);
-        admin.setFullName("MVJCE Admin");
-        admin.setEmail("admin@mvjce.edu.in");
+        admin.setFullName("Kredent Admin");
+        admin.setEmail("admin@example.edu");
         admin.setWalletAddress(adminAddress.toLowerCase(Locale.ROOT));
 
         when(adminRepository.findByWalletAddress(
@@ -91,6 +107,7 @@ class AdminAuthServiceTest {
         AdminWalletLoginRequest request = new AdminWalletLoginRequest();
         request.setWalletAddress(address);
         request.setSignature(signature);
+        request.setInstitutionId("DEMO-1001");
         return request;
     }
 
@@ -120,7 +137,7 @@ class AdminAuthServiceTest {
         ).isInstanceOf(ResponseStatusException.class);
 
         verify(jwtService, never())
-                .generateToken(anyString(), anyString(), anyLong());
+                .generateToken(anyString(), anyString(), anyLong(), anyLong());
     }
 
     @Test
@@ -139,7 +156,7 @@ class AdminAuthServiceTest {
         ).isInstanceOf(ResponseStatusException.class);
 
         verify(jwtService, never())
-                .generateToken(anyString(), anyString(), anyLong());
+                .generateToken(anyString(), anyString(), anyLong(), anyLong());
     }
 
     @Test
@@ -216,7 +233,7 @@ class AdminAuthServiceTest {
         ).isInstanceOf(ResponseStatusException.class);
 
         verify(jwtService, never())
-                .generateToken(anyString(), anyString(), anyLong());
+                .generateToken(anyString(), anyString(), anyLong(), anyLong());
     }
 
     @Test

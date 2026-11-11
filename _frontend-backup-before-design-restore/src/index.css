@@ -1,0 +1,293 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+@import 'tailwindcss';
+
+/*
+  Design tokens — the Kredent brand: a neutral, institution-independent identity for academic
+  credential infrastructure. Deep indigo for trust, teal for verification, cool neutral surfaces.
+  Tailwind v4: all tokens live here; no tailwind.config.js.
+*/
+@theme {
+  /* Brand palette */
+  --color-brand-primary: #312E81;
+  --color-brand-primary-deep: #1E1B4B;
+  --color-brand-charcoal: #0F172A;
+  --color-brand-accent: #0F766E;
+  --color-brand-accent-deep: #115E59;
+  --color-brand-danger: #DC2626;
+  --color-brand-gold: #F5B942;
+  --color-brand-cream: #EEF2FF;
+  --color-brand-blush: #FEE2E2;
+  --color-brand-ink: #0F172A;
+  --color-brand-muted: #64748B;
+
+  /*
+    Cool surface scale.
+      page   — the base canvas behind everything
+      raised — cards, tables, modals
+      sunken — inset wells, table headers, disabled fields
+      band   — the tinted section used to separate landing bands
+      line   — hairline borders
+  */
+  --color-surface-page: #F8FAFC;
+  --color-surface-raised: #FFFFFF;
+  --color-surface-sunken: #F1F5F9;
+  --color-surface-band: #EEF2FF;
+  --color-surface-line: #E2E8F0;
+  --color-surface-line-strong: #CBD5E1;
+
+  /* Neutral greys still referenced by a few components */
+  --color-kredent-neutral-50: #f8fafc;
+  --color-kredent-neutral-100: #f1f5f9;
+  --color-kredent-neutral-200: #e2e8f0;
+  --color-kredent-neutral-600: #64748b;
+  --color-kredent-neutral-700: #475569;
+  --color-kredent-neutral-900: #0F172A;
+
+  /* --font-serif is the *display* face (headings). The name is kept so existing
+     `heading-serif` / `text-h1` classes keep working; it is a geometric sans. */
+  --font-serif: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 30px rgba(49, 46, 129, 0.07);
+  --shadow-card-hover: 0 8px 16px rgba(49, 46, 129, 0.08), 0 20px 45px rgba(49, 46, 129, 0.14);
+  --shadow-glass: 0 8px 32px 0 rgba(49, 46, 129, 0.12);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* Typography scale */
+  --text-display: clamp(2.5rem, 5.2vw, 4.5rem);
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: -0.025em;
+  --text-h1: clamp(2.25rem, 4vw, 3.5rem);
+  --text-h1--line-height: 1.08;
+  --text-h1--letter-spacing: -0.02em;
+  --text-h2: clamp(1.875rem, 3vw, 2.75rem);
+  --text-h2--line-height: 1.12;
+  --text-h2--letter-spacing: -0.015em;
+  --text-h3: clamp(1.25rem, 1.6vw, 1.5rem);
+  --text-h3--line-height: 1.3;
+  --text-body-l: 1.125rem;
+  --text-body-l--line-height: 1.7;
+  --text-body: 1rem;
+  --text-body--line-height: 1.7;
+  --text-caption: 0.9375rem;
+  --text-caption--line-height: 1.6;
+  /* Genuinely small text — hashes, timestamps, meta. Distinct from --text-label,
+     which is a UPPERCASE tracked label and must never be used for sentence text. */
+  --text-micro: 0.8125rem;
+  --text-micro--line-height: 1.5;
+  --text-label: 0.75rem;
+  --text-label--line-height: 1;
+  --text-label--letter-spacing: 0.14em;
+  --text-mono: 0.75rem;
+  --text-mono--line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+  color: var(--color-brand-ink);
+  background: var(--color-surface-page);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.heading-serif {
+  font-family: var(--font-serif);
+}
+
+.text-display {
+  font-family: var(--font-serif);
+  font-size: var(--text-display);
+  line-height: var(--text-display--line-height);
+  letter-spacing: var(--text-display--letter-spacing);
+}
+
+.text-h1 {
+  font-family: var(--font-serif);
+  font-size: var(--text-h1);
+  line-height: var(--text-h1--line-height);
+  letter-spacing: var(--text-h1--letter-spacing);
+  font-weight: 700;
+}
+
+.text-h2 {
+  font-family: var(--font-serif);
+  font-size: var(--text-h2);
+  line-height: var(--text-h2--line-height);
+  letter-spacing: var(--text-h2--letter-spacing);
+  font-weight: 700;
+}
+
+.text-h3 {
+  font-size: var(--text-h3);
+  line-height: var(--text-h3--line-height);
+  font-weight: 600;
+}
+
+.text-body-l {
+  font-size: var(--text-body-l);
+  line-height: var(--text-body-l--line-height);
+}
+
+.text-caption {
+  font-size: var(--text-caption);
+  line-height: var(--text-caption--line-height);
+}
+
+.text-micro {
+  font-size: var(--text-micro);
+  line-height: var(--text-micro--line-height);
+}
+
+.text-label {
+  font-size: var(--text-label);
+  line-height: var(--text-label--line-height);
+  letter-spacing: var(--text-label--letter-spacing);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.text-mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+  line-height: var(--text-mono--line-height);
+}
+
+.prose-width {
+  max-width: 42rem;
+}
+
+.section-padding {
+  padding-top: 6rem;
+  padding-bottom: 6rem;
+}
+
+@media (min-width: 1024px) {
+  .section-padding {
+    padding-top: 8.75rem;
+    padding-bottom: 8.75rem;
+  }
+}
+
+.premium-shadow {
+  box-shadow: var(--shadow-card);
+}
+
+.hover-glow:hover {
+  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.35);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: var(--shadow-glass);
+}
+
+.text-gradient-accent {
+  background: linear-gradient(135deg, #0F766E 0%, #0D9488 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-navy {
+  background: linear-gradient(135deg, #312E81 0%, #3730A3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bg-gradient-accent {
+  background-color: var(--color-brand-accent);
+}
+
+.bg-gradient-accent:hover {
+  background-color: var(--color-brand-accent-deep);
+}
+
+.bg-gradient-navy {
+  background-image: linear-gradient(135deg, #312E81 0%, #1E1B4B 100%);
+}
+
+.shadow-fab {
+  box-shadow: 0 10px 24px rgba(13, 148, 136, 0.35), 0 4px 10px rgba(15, 23, 42, 0.15);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface-sunken);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-line-strong);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand-muted);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  animation: shimmer 1.6s infinite;
+}
+
+/* Landing hero: deep indigo field with a soft grid and teal glow — no photography, so the product
+   reads as institution-independent. */
+.hero-surface {
+  background-color: var(--color-brand-primary-deep);
+  background-image:
+    radial-gradient(60rem 30rem at 85% -10%, rgba(13, 148, 136, 0.35), transparent 60%),
+    radial-gradient(40rem 24rem at -10% 110%, rgba(99, 102, 241, 0.35), transparent 60%),
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: auto, auto, 44px 44px, 44px 44px;
+}

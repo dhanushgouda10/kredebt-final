@@ -2,7 +2,9 @@ package com.kredent.backend.service;
 
 import com.kredent.backend.dto.AdminWalletLoginRequest;
 import com.kredent.backend.dto.AuthResponse;
+import com.kredent.backend.dto.InstitutionSummary;
 import com.kredent.backend.entity.Admin;
+import com.kredent.backend.entity.Institution;
 import com.kredent.backend.entity.Role;
 import com.kredent.backend.repository.AdminRepository;
 import com.kredent.backend.security.JwtService;
@@ -31,16 +33,19 @@ public class AdminAuthService {
     private final JwtService jwtService;
     private final AdminNonceService nonceService;
     private final WalletSignatureVerifier signatureVerifier;
+    private final InstitutionAccessService institutionAccessService;
 
     public AdminAuthService(
             AdminRepository adminRepository,
             JwtService jwtService,
             AdminNonceService nonceService,
-            WalletSignatureVerifier signatureVerifier) {
+            WalletSignatureVerifier signatureVerifier,
+            InstitutionAccessService institutionAccessService) {
         this.adminRepository = adminRepository;
         this.jwtService = jwtService;
         this.nonceService = nonceService;
         this.signatureVerifier = signatureVerifier;
+        this.institutionAccessService = institutionAccessService;
     }
 
     /**
@@ -77,6 +82,11 @@ public class AdminAuthService {
             throw unauthorized();
         }
 
+        // 1b — the institution being signed in to must be fully onboarded on Kredent AND still
+        //      APPROVED in the registry right now (re-checked on every sign-in). Institution IDs are
+        //      not secret, so this step reports "not found / pending / suspended" explicitly.
+        Institution institution = institutionAccessService.requireActiveByRegistryId(request.getInstitutionId());
+
         // 2 — single-use challenge. Consuming it here means a replayed signature fails
         //     even if the attacker captured a valid one.
         Optional<String> challenge = nonceService.consume(address);
@@ -90,6 +100,13 @@ public class AdminAuthService {
             throw unauthorized();
         }
 
+        // 3b — the wallet must be the one linked to this institution. Several institutions may
+        //      share a wallet in the demo, but a wallet linked to institution A cannot open B.
+        if (!address.equalsIgnoreCase(institution.getWalletAddress())) {
+            log.warn("Admin wallet login rejected: wallet is not linked to institution {}", institution.getRegistryInstitutionId());
+            throw unauthorized();
+        }
+
         // 4 — signature is genuine; is this wallet actually an admin?
         Admin admin = adminRepository.findByWalletAddress(address.toLowerCase(Locale.ROOT))
                 .orElseThrow(() -> {
@@ -98,8 +115,10 @@ public class AdminAuthService {
                 });
 
         // 5 — unchanged token issuance
-        String token = jwtService.generateToken(admin.getWalletAddress(), Role.ADMIN.name(), admin.getId());
-        return new AuthResponse(token, Role.ADMIN.name(), admin.getId(), admin.getFullName(), admin.getEmail());
+        String token = jwtService.generateToken(admin.getWalletAddress(), Role.ADMIN.name(), admin.getId(), institution.getId());
+        AuthResponse response = new AuthResponse(token, Role.ADMIN.name(), admin.getId(), admin.getFullName(), admin.getEmail());
+        response.setInstitution(InstitutionSummary.from(institution));
+        return response;
     }
 
     private static ResponseStatusException unauthorized() {

@@ -12,13 +12,13 @@ export function PageHeader({ eyebrow, title, subtitle, actions, align = 'left', 
         }
       >
         <div className={centered ? '' : 'min-w-0'}>
-          {eyebrow && <p className="text-label mb-3 text-mvj-orange">{eyebrow}</p>}
-          <h1 className={`text-h2 font-bold text-mvj-navy ${centered ? 'mx-auto max-w-2xl' : ''}`}>
+          {eyebrow && <p className="text-label mb-3 text-brand-accent">{eyebrow}</p>}
+          <h1 className={`text-h2 font-bold text-brand-primary ${centered ? 'mx-auto max-w-2xl' : ''}`}>
             {title}
           </h1>
           {subtitle && (
             <p
-              className={`text-body-l mt-4 text-mvj-muted ${centered ? 'mx-auto max-w-2xl' : 'max-w-2xl'}`}
+              className={`text-body-l mt-4 text-brand-muted ${centered ? 'mx-auto max-w-2xl' : 'max-w-2xl'}`}
             >
               {subtitle}
             </p>

@@ -1,14 +1,14 @@
 const BASE =
-  'w-full rounded-lg border bg-surface-raised px-4 py-3 text-caption text-mvj-ink placeholder:text-mvj-muted/60 transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-mvj-muted'
+  'w-full rounded-lg border bg-surface-raised px-4 py-3 text-caption text-brand-ink placeholder:text-brand-muted/60 transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-brand-muted'
 
 const STATE = {
-  default: 'border-surface-line-strong focus:border-mvj-navy focus:ring-mvj-navy/20',
+  default: 'border-surface-line-strong focus:border-brand-primary focus:ring-brand-primary/20',
   error: 'border-red-400 focus:border-red-500 focus:ring-red-500/25',
 }
 
 export function Label({ children, required, htmlFor, className = '' }) {
   return (
-    <label htmlFor={htmlFor} className={`mb-2 block text-caption font-semibold text-mvj-ink ${className}`}>
+    <label htmlFor={htmlFor} className={`mb-2 block text-caption font-semibold text-brand-ink ${className}`}>
       {children}
       {required && (
         <span className="ml-0.5 text-red-500" aria-hidden="true">
@@ -52,7 +52,7 @@ export function Input({ label, id, required, error, hint, className = '', contai
         {...rest}
       />
       {error && <p id={`${inputId}-error`} role="alert" className="mt-1.5 text-micro font-medium text-red-600">{error}</p>}
-      {!error && hint && <p className="mt-1.5 text-micro text-mvj-muted">{hint}</p>}
+      {!error && hint && <p className="mt-1.5 text-micro text-brand-muted">{hint}</p>}
     </div>
   )
 }
@@ -77,7 +77,7 @@ export function Select({ label, id, required, error, hint, className = '', conta
         {children}
       </select>
       {error && <p role="alert" className="mt-1.5 text-micro font-medium text-red-600">{error}</p>}
-      {!error && hint && <p className="mt-1.5 text-micro text-mvj-muted">{hint}</p>}
+      {!error && hint && <p className="mt-1.5 text-micro text-brand-muted">{hint}</p>}
     </div>
   )
 }

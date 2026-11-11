@@ -10,7 +10,7 @@ function authHeaders(extra = {}) {
   }
 }
 
-// GET /api/admin/departments — the fixed department catalog (real MVJCE programmes), each with
+// GET /api/admin/departments — the fixed department catalog, each with
 // its current real student count. Used to populate every department picker/filter in the admin
 // portal, so the list only ever comes from one place.
 export async function listDepartments() {

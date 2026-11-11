@@ -1,15 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import { KredentMark, BRAND_NAME } from '../brand/KredentLogo'
 
 const utilityLinks = [
-  { label: 'Campus Life', href: 'https://mvjce.edu.in/campus-life/' },
-  { label: 'Events', href: 'https://mvjce.edu.in/all-events/' },
-  { label: 'News', href: 'https://mvjce.edu.in/news/' },
-  { label: 'Central Library', href: 'https://mvjce.edu.in/campus-life/central-library/' },
-  { label: 'Careers', href: 'https://mvjce.edu.in/careers/' },
-  { label: 'Gallery', href: 'https://mvjce.edu.in/gallery/' },
-  { label: 'Apply Now', href: 'https://mvjce.edu.in/admissions/' },
+  { label: 'Verify Certificate', to: '/verify' },
+  { label: 'For Institutions', to: '/admin/login' },
+  { label: 'Institutional Registry', to: '/registry' },
+  { label: 'Student Portal', to: '/login' },
 ]
 
 const navItems = [
@@ -22,18 +20,14 @@ const navItems = [
 function Brand({ compact = false }) {
   return (
     <NavLink to="/" className="flex items-center gap-3 min-w-0" aria-label="Kredent home">
-      <img
-        src="/MVJCE_-_New_Logo.png"
-        alt=""
-        className={`shrink-0 object-contain ${compact ? 'h-9 w-9' : 'h-12 w-12 lg:h-14 lg:w-14'}`}
-      />
+      <KredentMark className={compact ? 'h-9 w-9' : 'h-12 w-12 lg:h-14 lg:w-14'} />
       {!compact && (
         <span className="min-w-0 hidden sm:block">
-          <span className="heading-serif block text-h3 font-bold leading-tight text-mvj-navy">
-            KREDENT
+          <span className="heading-serif block text-h3 font-bold leading-tight text-brand-primary">
+            {BRAND_NAME}
           </span>
-          <span className="mt-0.5 block text-label normal-case tracking-[0.08em] text-mvj-red">
-            MVJ College of Engineering
+          <span className="mt-0.5 block text-label normal-case tracking-[0.08em] text-brand-danger">
+            Academic Credentials
           </span>
         </span>
       )}
@@ -101,7 +95,7 @@ export function Navbar() {
         isScrolled ? 'shadow-[0_2px_20px_rgba(14,42,92,0.14)]' : ''
       }`}
     >
-      {/* Desktop / tablet — MVJCE two-tier grid */}
+      {/* Desktop / tablet — two-tier grid */}
       <div className="hidden lg:block">
         <div className="nav-header-grid">
           <div className="nav-logo-plate">
@@ -116,29 +110,25 @@ export function Navbar() {
           >
             <div className="nav-tier-utility">
               {utilityLinks.map((link) => (
-                <a
+                <NavLink
                   key={link.label}
-                  href={link.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="whitespace-nowrap text-caption text-white transition-colors hover:text-mvj-orange"
+                  to={link.to}
+                  className="whitespace-nowrap text-caption text-white transition-colors hover:text-brand-accent"
                 >
                   {link.label}
-                </a>
+                </NavLink>
               ))}
 
-              <a
-                href="https://mvjce.edu.in/"
-                target="_blank"
-                rel="noreferrer"
-                className="whitespace-nowrap rounded-md bg-mvj-orange px-4 py-1.5 text-caption font-semibold text-white transition-colors hover:bg-mvj-orange-deep"
+              <NavLink
+                to="/registry/register" target="_blank" rel="noopener noreferrer"
+                className="whitespace-nowrap rounded-md bg-brand-accent px-4 py-1.5 text-caption font-semibold text-white transition-colors hover:bg-brand-accent-deep"
               >
-                MVJ Degree College
-              </a>
+                Register Institution
+              </NavLink>
 
               <NavLink
                 to="/verify"
-                className="whitespace-nowrap rounded-md bg-mvj-red px-4 py-1.5 text-caption font-semibold text-white transition-colors hover:bg-mvj-navy-deep"
+                className="whitespace-nowrap rounded-md bg-brand-danger px-4 py-1.5 text-caption font-semibold text-white transition-colors hover:bg-brand-primary-deep"
               >
                 Verify Credential
               </NavLink>
@@ -174,7 +164,7 @@ export function Navbar() {
                       end={item.to === '/'}
                       className={({ isActive }) =>
                         `relative py-1 text-label normal-case tracking-[0.1em] transition-colors duration-150 ${
-                          isActive ? 'text-mvj-navy' : 'text-mvj-charcoal hover:text-mvj-red'
+                          isActive ? 'text-brand-primary' : 'text-brand-charcoal hover:text-brand-danger'
                         }`
                       }
                     >
@@ -283,40 +273,31 @@ export function Navbar() {
                 </ul>
 
                 <p className="mb-2 px-4 text-micro font-bold uppercase tracking-[0.16em] text-[#5A6B84]">
-                  College
+                  Institutions
                 </p>
                 <ul className="space-y-1">
                   {utilityLinks.map((link) => (
                     <li key={link.label}>
-                      <a
-                        href={link.href}
-                        target="_blank"
-                        rel="noreferrer"
+                      <NavLink
+                        to={link.to}
                         onClick={() => setIsMenuOpen(false)}
-                        className="flex items-center justify-between rounded-lg px-4 py-2.5 text-caption text-[#231F20] transition hover:bg-surface-sunken"
+                        className="block rounded-lg px-4 py-2.5 text-caption text-[#231F20] transition hover:bg-surface-sunken"
                       >
                         {link.label}
-                        <svg className="h-3.5 w-3.5 text-[#5A6B84]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                      </a>
+                      </NavLink>
                     </li>
                   ))}
                 </ul>
               </nav>
 
               <div className="border-t border-surface-line px-5 py-4">
-                <a
-                  href="https://mvjce.edu.in/"
-                  target="_blank"
-                  rel="noreferrer"
+                <NavLink
+                  to="/registry/register" target="_blank" rel="noopener noreferrer"
+                  onClick={() => setIsMenuOpen(false)}
                   className="flex items-center gap-2 text-caption font-semibold text-[#CE2A26] hover:underline"
                 >
-                  MVJ Degree College
-                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </a>
+                  Register your institution
+                </NavLink>
               </div>
             </motion.div>
           </motion.div>

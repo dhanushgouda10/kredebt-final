@@ -196,14 +196,14 @@ export function AuditLogsPage() {
             <table className="w-full">
               <thead className="border-b border-surface-line bg-surface-sunken">
                 <tr>
-                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Date / Time</th>
-                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Action</th>
-                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Certificate</th>
-                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Student</th>
-                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Department</th>
-                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Performed By</th>
-                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Tx Hash</th>
-                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-mvj-muted">Details</th>
+                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">Date / Time</th>
+                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">Action</th>
+                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">Certificate</th>
+                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">Student</th>
+                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">Department</th>
+                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">Performed By</th>
+                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">Tx Hash</th>
+                  <th className="px-6 py-5 text-left text-micro font-semibold uppercase tracking-wider text-brand-muted">Details</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-surface-line">
@@ -224,47 +224,47 @@ export function AuditLogsPage() {
                       key={entry.id}
                       className="transition-colors hover:bg-surface-sunken"
                     >
-                      <td className="px-6 py-5 text-caption text-mvj-muted">{formatDateTime(entry.createdAt)}</td>
+                      <td className="px-6 py-5 text-caption text-brand-muted">{formatDateTime(entry.createdAt)}</td>
                       <td className="px-6 py-5">
                         <Badge variant={actionMeta(entry.action).variant}>{actionMeta(entry.action).label}</Badge>
                       </td>
                       <td className="px-6 py-5">
                         {entry.certificateNumber ? (
-                          <code className="rounded bg-surface-sunken px-2 py-1 font-mono text-micro text-mvj-muted">
+                          <code className="rounded bg-surface-sunken px-2 py-1 font-mono text-micro text-brand-muted">
                             {entry.certificateNumber}
                           </code>
                         ) : (
-                          <span className="text-caption text-mvj-muted/75">—</span>
+                          <span className="text-caption text-brand-muted/75">—</span>
                         )}
                       </td>
                       <td className="px-6 py-5">
                         {entry.studentName || entry.studentUsn ? (
                           <div>
-                            {entry.studentName && <p className="text-caption font-medium text-mvj-ink">{entry.studentName}</p>}
-                            {entry.studentUsn && <p className="text-micro text-mvj-muted/75">{entry.studentUsn}</p>}
+                            {entry.studentName && <p className="text-caption font-medium text-brand-ink">{entry.studentName}</p>}
+                            {entry.studentUsn && <p className="text-micro text-brand-muted/75">{entry.studentUsn}</p>}
                           </div>
                         ) : (
-                          <span className="text-caption text-mvj-muted/75">—</span>
+                          <span className="text-caption text-brand-muted/75">—</span>
                         )}
                       </td>
                       <td className="px-6 py-5">
                         {entry.department ? (
                           <Badge variant="info">{entry.department}</Badge>
                         ) : (
-                          <span className="text-caption text-mvj-muted/75">—</span>
+                          <span className="text-caption text-brand-muted/75">—</span>
                         )}
                       </td>
-                      <td className="px-6 py-5 text-caption text-mvj-muted">
+                      <td className="px-6 py-5 text-caption text-brand-muted">
                         {entry.actorName || '—'}
-                        {entry.actorType && <span className="ml-1.5 text-micro text-mvj-muted/75">({entry.actorType})</span>}
+                        {entry.actorType && <span className="ml-1.5 text-micro text-brand-muted/75">({entry.actorType})</span>}
                       </td>
                       <td className="px-6 py-5">
                         {entry.transactionHash ? (
-                          <code className="rounded bg-surface-sunken px-2 py-1 font-mono text-micro text-mvj-muted" title={entry.transactionHash}>
+                          <code className="rounded bg-surface-sunken px-2 py-1 font-mono text-micro text-brand-muted" title={entry.transactionHash}>
                             {truncateHash(entry.transactionHash)}
                           </code>
                         ) : (
-                          <span className="text-caption text-mvj-muted/75">—</span>
+                          <span className="text-caption text-brand-muted/75">—</span>
                         )}
                       </td>
                       <td className="px-6 py-5">
@@ -300,55 +300,55 @@ export function AuditLogsPage() {
           <div className="space-y-6 p-6">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <p className="text-caption text-mvj-muted">Date / Time</p>
-                <p className="font-semibold text-mvj-ink">{formatDateTime(selectedLog.createdAt)}</p>
+                <p className="text-caption text-brand-muted">Date / Time</p>
+                <p className="font-semibold text-brand-ink">{formatDateTime(selectedLog.createdAt)}</p>
               </div>
               <div>
-                <p className="mb-1 text-caption text-mvj-muted">Action</p>
+                <p className="mb-1 text-caption text-brand-muted">Action</p>
                 <Badge variant={actionMeta(selectedLog.action).variant}>{actionMeta(selectedLog.action).label}</Badge>
               </div>
               {selectedLog.certificateNumber && (
                 <div>
-                  <p className="text-caption text-mvj-muted">Certificate Number</p>
-                  <p className="font-mono text-caption text-mvj-ink">{selectedLog.certificateNumber}</p>
+                  <p className="text-caption text-brand-muted">Certificate Number</p>
+                  <p className="font-mono text-caption text-brand-ink">{selectedLog.certificateNumber}</p>
                 </div>
               )}
               {(selectedLog.studentName || selectedLog.studentUsn) && (
                 <div>
-                  <p className="text-caption text-mvj-muted">Student</p>
-                  <p className="font-semibold text-mvj-ink">
+                  <p className="text-caption text-brand-muted">Student</p>
+                  <p className="font-semibold text-brand-ink">
                     {selectedLog.studentName} {selectedLog.studentUsn && `(${selectedLog.studentUsn})`}
                   </p>
                 </div>
               )}
               {selectedLog.department && (
                 <div>
-                  <p className="text-caption text-mvj-muted">Department</p>
-                  <p className="font-semibold text-mvj-ink">{selectedLog.department}</p>
+                  <p className="text-caption text-brand-muted">Department</p>
+                  <p className="font-semibold text-brand-ink">{selectedLog.department}</p>
                 </div>
               )}
               <div>
-                <p className="text-caption text-mvj-muted">Performed By</p>
-                <p className="font-semibold text-mvj-ink">
-                  {selectedLog.actorName || '—'} <span className="text-caption font-normal text-mvj-muted/75">({selectedLog.actorType})</span>
+                <p className="text-caption text-brand-muted">Performed By</p>
+                <p className="font-semibold text-brand-ink">
+                  {selectedLog.actorName || '—'} <span className="text-caption font-normal text-brand-muted/75">({selectedLog.actorType})</span>
                 </p>
               </div>
               {selectedLog.transactionHash && (
                 <div className="md:col-span-2">
-                  <p className="mb-1 text-caption text-mvj-muted">Transaction Hash</p>
-                  <p className="break-all rounded bg-surface-sunken p-2 font-mono text-micro text-mvj-ink">{selectedLog.transactionHash}</p>
+                  <p className="mb-1 text-caption text-brand-muted">Transaction Hash</p>
+                  <p className="break-all rounded bg-surface-sunken p-2 font-mono text-micro text-brand-ink">{selectedLog.transactionHash}</p>
                 </div>
               )}
             </div>
 
             {selectedLog.details && Object.keys(selectedLog.details).length > 0 && (
               <div>
-                <p className="mb-2 text-caption font-semibold text-mvj-muted">Details</p>
+                <p className="mb-2 text-caption font-semibold text-brand-muted">Details</p>
                 <div className="space-y-1.5 rounded-lg bg-surface-sunken p-4">
                   {Object.entries(selectedLog.details).map(([key, value]) => (
                     <div key={key} className="flex flex-wrap justify-between gap-2 text-caption">
-                      <span className="text-mvj-muted/75">{key}</span>
-                      <span className="break-all text-right font-mono text-micro text-mvj-ink">{String(value)}</span>
+                      <span className="text-brand-muted/75">{key}</span>
+                      <span className="break-all text-right font-mono text-micro text-brand-ink">{String(value)}</span>
                     </div>
                   ))}
                 </div>

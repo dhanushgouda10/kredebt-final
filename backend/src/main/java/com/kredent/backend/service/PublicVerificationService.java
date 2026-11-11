@@ -39,9 +39,8 @@ public class PublicVerificationService {
 
     private static final Logger log = LoggerFactory.getLogger(PublicVerificationService.class);
 
-    // Single-institution deployment — matches the branding already used throughout the frontend
-    // (LoginSignupPage, CertificatePage). Not a DB field: there is only ever one issuer here.
-    private static final String INSTITUTION_NAME = "MVJ College of Engineering";
+    // Shown only for certificates issued before multi-institution support (no institution recorded).
+    private static final String LEGACY_INSTITUTION_NAME = "Issuing institution";
     private static final String NETWORK_DISPLAY_NAME = "Polygon Amoy";
 
     private final CertificateRepository certificateRepository;
@@ -204,7 +203,9 @@ public class PublicVerificationService {
         dto.setStudentName(certificate.getStudent().getFullName());
         dto.setDegreeName(certificate.getDegreeName());
         dto.setDepartment(certificate.getDepartment());
-        dto.setInstitution(INSTITUTION_NAME);
+        dto.setInstitution(certificate.getInstitution() != null
+                ? certificate.getInstitution().getName()
+                : LEGACY_INSTITUTION_NAME);
         dto.setYearOfCompletion(certificate.getYearOfCompletion());
         dto.setIssuedAt(certificate.getIssuedAt());
         dto.setCertificateStatus(certificate.getStatus().name());

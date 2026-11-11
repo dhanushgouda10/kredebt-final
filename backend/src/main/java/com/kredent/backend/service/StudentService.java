@@ -7,6 +7,7 @@ import com.kredent.backend.dto.StudentResponse;
 import com.kredent.backend.dto.UpdateStudentProfileRequest;
 import com.kredent.backend.entity.ActorType;
 import com.kredent.backend.entity.Admin;
+import com.kredent.backend.entity.Institution;
 import com.kredent.backend.entity.Student;
 import com.kredent.backend.repository.StudentRepository;
 import com.kredent.backend.util.DepartmentCatalog;
@@ -48,7 +49,7 @@ public class StudentService {
 
     /**
      * Emails are stored lowercase and trimmed so the unique constraint actually
-     * bites — without this, Student@mvjce.edu.in and student@mvjce.edu.in would be
+     * bites — without this, Student@example.edu and student@example.edu would be
      * two distinct rows for the same mailbox.
      */
     static String normalizeEmail(String email) {
@@ -68,16 +69,17 @@ public class StudentService {
     }
 
     public StudentResponse getByUsn(String usn) {
-        Student student = studentRepository.findByUsn(usn)
+        Long institutionId = currentUserService.getCurrentInstitution().getId();
+        Student student = studentRepository.findByInstitutionIdAndUsn(institutionId, usn)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No student with USN " + usn));
         return StudentResponse.from(student);
     }
 
+    /** Students of the signed-in administrator's institution only. */
     public PageResponse<StudentResponse> listStudents(String search, Pageable pageable) {
-        Page<Student> page = (search == null || search.isBlank())
-                ? studentRepository.findAll(pageable)
-                : studentRepository.search(search.trim(), pageable);
-        return PageResponse.from(page, StudentResponse::from);
+        Long institutionId = currentUserService.getCurrentInstitution().getId();
+        String query = search == null ? "" : search.trim();
+        return PageResponse.from(studentRepository.search(institutionId, query, pageable), StudentResponse::from);
     }
 
     /**
@@ -86,15 +88,21 @@ public class StudentService {
      * never needs to fetch a whole department's roster to filter it client-side.
      */
     public PageResponse<StudentResponse> listStudentsByDepartment(String department, String search, Pageable pageable) {
+        Long institutionId = currentUserService.getCurrentInstitution().getId();
         String query = search == null ? "" : search.trim();
-        Page<Student> page = studentRepository.searchByDepartment(department, query, pageable);
+        Page<Student> page = studentRepository.searchByDepartment(institutionId, department, query, pageable);
         return PageResponse.from(page, StudentResponse::from);
     }
 
     public StudentResponse getById(Long id) {
-        Student student = studentRepository.findById(id)
+        return StudentResponse.from(findOwnStudent(id));
+    }
+
+    /** A student of the signed-in administrator's institution, or 404 — other institutions' students are invisible. */
+    private Student findOwnStudent(Long id) {
+        Long institutionId = currentUserService.getCurrentInstitution().getId();
+        return studentRepository.findByIdAndInstitutionId(id, institutionId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
-        return StudentResponse.from(student);
     }
 
     public StudentResponse adminCreateStudent(RegisterRequest request) {
@@ -103,12 +111,14 @@ public class StudentService {
         if (studentRepository.existsByEmail(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
-        if (studentRepository.existsByUsn(request.getUsn())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "USN already exists");
+        Institution institution = currentUserService.getCurrentInstitution();
+        if (studentRepository.existsByInstitutionIdAndUsn(institution.getId(), request.getUsn())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "USN already exists at this institution");
         }
         assertValidDepartment(request.getDepartment());
 
         Student student = new Student();
+        student.setInstitution(institution);
         student.setFullName(request.getFullName());
         student.setUsn(request.getUsn());
         student.setEmail(email);
@@ -143,16 +153,15 @@ public class StudentService {
     }
 
     public StudentResponse adminUpdateStudent(Long studentId, AdminUpdateStudentRequest request) {
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
-
-        if (!student.getEmail().equalsIgnoreCase(request.getEmail()) && studentRepository.existsByEmail(request.getEmail())) {
+        Student student = findOwnStudent(studentId);
+        String email = normalizeEmail(request.getEmail());
+        if (!student.getEmail().equalsIgnoreCase(email) && studentRepository.existsByEmail(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use by another student");
         }
         assertValidDepartment(request.getDepartment());
 
         student.setFullName(request.getFullName());
-        student.setEmail(request.getEmail());
+        student.setEmail(email);
         student.setPhone(request.getPhone());
         student.setDepartment(request.getDepartment());
         studentRepository.save(student);

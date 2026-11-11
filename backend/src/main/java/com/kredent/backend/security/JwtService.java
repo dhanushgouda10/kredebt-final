@@ -41,6 +41,30 @@ public class JwtService {
                 .compact();
     }
 
+    /**
+     * College-administrator token: same as above plus the Kredent institution the session belongs
+     * to. The claim only says which institution the admin signed in for — every admin request is
+     * re-checked against the institution's live status (see AdminInstitutionGuardFilter).
+     */
+    public String generateToken(String subject, String role, Long userId, Long institutionId) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + expirationMs);
+
+        return Jwts.builder()
+                .subject(subject)
+                .claims(Map.of("role", role, "userId", userId, "institutionId", institutionId))
+                .issuedAt(now)
+                .expiration(expiry)
+                .signWith(signingKey)
+                .compact();
+    }
+
+    /** The institution this token was issued for, or null for tokens that carry none (students). */
+    public Long extractInstitutionId(String token) {
+        Object value = parseClaims(token).get("institutionId");
+        return value instanceof Number number ? number.longValue() : null;
+    }
+
     public Claims parseClaims(String token) {
         return Jwts.parser()
                 .verifyWith(signingKey)

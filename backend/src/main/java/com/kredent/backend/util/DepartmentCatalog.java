@@ -5,9 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The fixed set of departments/branches this deployment recognizes — MVJ College of
- * Engineering's actual B.E. programmes (verified against the official department listing at
- * mvjce.edu.in/programmes), not invented names. Codes are the short form used consistently
+ * The fixed set of departments/branches this deployment recognizes — common engineering
+ * programmes offered across Indian institutions. Codes are the short form used consistently
  * everywhere (student records, certificates, filters); labels are the full programme name shown
  * in the UI.
  *

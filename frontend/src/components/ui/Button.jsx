@@ -2,15 +2,15 @@ import { Link } from 'react-router-dom'
 
 const VARIANTS = {
   primary:
-    'bg-mvj-navy text-white hover:bg-mvj-navy-deep disabled:bg-mvj-muted',
+    'bg-brand-primary text-white hover:bg-brand-primary-deep disabled:bg-brand-muted',
   accent:
-    'bg-mvj-orange text-white hover:bg-mvj-orange-deep disabled:bg-mvj-muted',
+    'bg-brand-accent text-white hover:bg-brand-accent-deep disabled:bg-brand-muted',
   outline:
-    'border-2 border-mvj-navy text-mvj-navy hover:bg-mvj-navy hover:text-white disabled:border-surface-line-strong disabled:text-mvj-muted disabled:hover:bg-transparent',
-  ghost: 'text-mvj-navy hover:bg-mvj-navy/8 disabled:text-mvj-muted',
+    'border-2 border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white disabled:border-surface-line-strong disabled:text-brand-muted disabled:hover:bg-transparent',
+  ghost: 'text-brand-primary hover:bg-brand-primary/8 disabled:text-brand-muted',
   danger:
-    'border-2 border-mvj-red text-mvj-red hover:bg-mvj-red hover:text-white disabled:border-surface-line-strong disabled:text-mvj-muted',
-  pill: 'bg-mvj-orange text-white hover:bg-mvj-orange-deep disabled:bg-mvj-muted rounded-full',
+    'border-2 border-brand-danger text-brand-danger hover:bg-brand-danger hover:text-white disabled:border-surface-line-strong disabled:text-brand-muted',
+  pill: 'bg-brand-accent text-white hover:bg-brand-accent-deep disabled:bg-brand-muted rounded-full',
 }
 
 const SIZES = {

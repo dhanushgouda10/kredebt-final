@@ -12,28 +12,28 @@ export function Pagination({ page, totalPages, totalElements, pageSize, onPageCh
 
   return (
     <div className="flex flex-col items-center justify-between gap-3 border-t border-surface-line px-6 py-4 sm:flex-row">
-      <p className="text-caption text-mvj-muted">
-        Showing <span className="font-medium text-mvj-ink">{from}</span>–
-        <span className="font-medium text-mvj-ink">{to}</span> of{' '}
-        <span className="font-medium text-mvj-ink">{totalElements}</span>
+      <p className="text-caption text-brand-muted">
+        Showing <span className="font-medium text-brand-ink">{from}</span>–
+        <span className="font-medium text-brand-ink">{to}</span> of{' '}
+        <span className="font-medium text-brand-ink">{totalElements}</span>
       </p>
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 0}
-          className="rounded-lg border border-surface-line px-3 py-1.5 text-caption font-medium text-mvj-muted transition hover:bg-surface-sunken disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-lg border border-surface-line px-3 py-1.5 text-caption font-medium text-brand-muted transition hover:bg-surface-sunken disabled:cursor-not-allowed disabled:opacity-40"
         >
           Previous
         </button>
-        <span className="text-caption text-mvj-muted">
+        <span className="text-caption text-brand-muted">
           Page {totalPages === 0 ? 0 : page + 1} of {totalPages}
         </span>
         <button
           type="button"
           onClick={() => onPageChange(page + 1)}
           disabled={page + 1 >= totalPages}
-          className="rounded-lg border border-surface-line px-3 py-1.5 text-caption font-medium text-mvj-muted transition hover:bg-surface-sunken disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-lg border border-surface-line px-3 py-1.5 text-caption font-medium text-brand-muted transition hover:bg-surface-sunken disabled:cursor-not-allowed disabled:opacity-40"
         >
           Next
         </button>

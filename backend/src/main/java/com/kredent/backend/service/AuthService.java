@@ -4,6 +4,11 @@ import com.kredent.backend.dto.AuthResponse;
 import com.kredent.backend.dto.LoginRequest;
 import com.kredent.backend.dto.RegisterRequest;
 import com.kredent.backend.entity.Role;
+import com.kredent.backend.repository.InstitutionRepository;
+import com.kredent.backend.registry.RegistryService;
+import com.kredent.backend.registry.RegistryInstitution;
+import com.kredent.backend.entity.Institution;
+import com.kredent.backend.dto.InstitutionSummary;
 import com.kredent.backend.entity.Student;
 import com.kredent.backend.repository.StudentRepository;
 import com.kredent.backend.security.JwtService;
@@ -21,18 +26,24 @@ public class AuthService {
     private final JwtService jwtService;
     private final WalletService walletService;
     private final EmailService emailService;
+    private final InstitutionAccessService institutionAccessService;
+    private final InstitutionRepository institutionRepository;
 
     public AuthService(
             StudentRepository studentRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
             WalletService walletService,
-            EmailService emailService) {
+            EmailService emailService,
+            InstitutionAccessService institutionAccessService,
+            InstitutionRepository institutionRepository) {
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.walletService = walletService;
         this.emailService = emailService;
+        this.institutionAccessService = institutionAccessService;
+        this.institutionRepository = institutionRepository;
     }
 
     /**
@@ -41,12 +52,12 @@ public class AuthService {
      */
     public boolean register(RegisterRequest request) {
         String email = StudentService.normalizeEmail(request.getEmail());
-
         if (studentRepository.existsByEmail(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
-        if (studentRepository.existsByUsn(request.getUsn())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "USN already exists");
+        Institution institution = resolveJoinedInstitution(request.getInstitutionId());
+        if (studentRepository.existsByInstitutionIdAndUsn(institution.getId(), request.getUsn())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "USN already exists at this institution");
         }
         if (!DepartmentCatalog.isValidCode(request.getDepartment())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -54,6 +65,7 @@ public class AuthService {
         }
 
         Student student = new Student();
+        student.setInstitution(institution);
         student.setFullName(request.getFullName());
         student.setUsn(request.getUsn());
         student.setEmail(email);
@@ -73,16 +85,42 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        Student student = studentRepository.findByEmail(request.getEmail())
+        Student student = studentRepository.findByEmail(StudentService.normalizeEmail(request.getEmail()))
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED,
                         "Invalid email or password"));
-
         if (!passwordEncoder.matches(request.getPassword(), student.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
         }
-
+        // The college chosen on the sign-in screen must be the one this account belongs to. Checked
+        // only after the password so the response never reveals which college an email belongs to.
+        String chosen = request.getInstitutionId();
+        if (chosen != null && !chosen.isBlank()) {
+            String own = student.getInstitution() == null ? null : student.getInstitution().getRegistryInstitutionId();
+            if (own == null || !own.equalsIgnoreCase(RegistryService.normalizeInstitutionId(chosen))) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                        "This account is not registered at the selected college");
+            }
+        }
         String token = jwtService.generateToken(student.getEmail(), Role.STUDENT.name(), student.getId());
-        return new AuthResponse(token, Role.STUDENT.name(), student.getId(), student.getFullName(), student.getEmail());
+        AuthResponse response = new AuthResponse(token, Role.STUDENT.name(), student.getId(), student.getFullName(), student.getEmail());
+        if (student.getInstitution() != null) {
+            response.setInstitution(InstitutionSummary.from(student.getInstitution()));
+        }
+        return response;
+    }
+
+    /** The college a student registers at: approved in the registry AND already onboarded on Kredent. */
+    private Institution resolveJoinedInstitution(String rawInstitutionId) {
+        if (rawInstitutionId == null || rawInstitutionId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Choose your college from the list.");
+        }
+        RegistryInstitution registry = institutionAccessService.requireApprovedInRegistry(rawInstitutionId);
+        Institution institution = institutionRepository.findByRegistryInstitutionId(registry.institutionId())
+                .filter(Institution::isOnboarded)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT,
+                        registry.collegeName() + " has not joined Kredent yet. Ask your college administrator to complete "
+                                + "institution verification first."));
+        return institution;
     }
 }

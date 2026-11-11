@@ -1,5 +1,6 @@
 package com.kredent.backend.config;
 
+import com.kredent.backend.security.AdminInstitutionGuardFilter;
 import com.kredent.backend.security.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +29,11 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    // The guard filter is a method parameter, NOT a constructor dependency of this class: it needs the
+    // PasswordEncoder bean declared above (via the registry service), so constructor-injecting it would
+    // create a SecurityConfig <-> PasswordEncoder circular dependency that Spring Boot refuses to start with.
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   AdminInstitutionGuardFilter adminInstitutionGuardFilter) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -40,11 +45,18 @@ public class SecurityConfig {
                         // can't load at all (chicken-and-egg: you'd need a JWT to view how to get one).
                         // This does not loosen access to any actual /api/** business endpoint.
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        // Simulated institutional registry (demo only). Registration, email
+                        // verification and the registry admin's own login are public; everything
+                        // else under /api/registry/admin needs the separate registry-admin role.
+                        .requestMatchers("/api/registry/admin/login").permitAll()
+                        .requestMatchers("/api/registry/admin/**").hasRole("REGISTRY_ADMIN")
+                        .requestMatchers("/api/registry/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/student/**").hasRole("STUDENT")
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(adminInstitutionGuardFilter, JwtAuthFilter.class);
 
         return http.build();
     }

@@ -36,13 +36,10 @@ public class AdminAuditLogController {
             @RequestParam(required = false) String department,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100), Sort.by("createdAt").descending());
         // search/action/department are the Audit Logs page's filter strip — all optional, all
         // applied server-side (AuditLogService.listFiltered) once any of them is set, so the page
         // never needs to fetch more than one page of rows to filter or search.
-        if (search != null || action != null || department != null) {
-            return ResponseEntity.ok(auditLogService.listFiltered(action, department, search, pageable));
-        }
-        return ResponseEntity.ok(auditLogService.listAll(pageable));
+        return ResponseEntity.ok(auditLogService.listFiltered(action, department, search, pageable));
     }
 }

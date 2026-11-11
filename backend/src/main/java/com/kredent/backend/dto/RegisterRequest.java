@@ -1,6 +1,5 @@
 package com.kredent.backend.dto;
 
-import com.kredent.backend.validation.MvjceEmail;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
@@ -13,10 +12,10 @@ public class RegisterRequest {
     private String usn;
 
     // Shared by both registration paths (public self-registration and admin-created
-    // accounts), so this one constraint covers both.
+    // accounts), so this one constraint covers both. Kredent serves many institutions, so no single
+    // college email domain is enforced — only a well-formed address.
     @NotBlank
     @Email
-    @MvjceEmail
     private String email;
 
     @NotBlank
@@ -27,6 +26,18 @@ public class RegisterRequest {
 
     @NotBlank
     private String password;
+
+    // Registry institutional ID of the student's college. Required for self-registration; ignored
+    // when an administrator creates a student (the student joins the administrator's institution).
+    private String institutionId;
+
+    public String getInstitutionId() {
+        return institutionId;
+    }
+
+    public void setInstitutionId(String institutionId) {
+        this.institutionId = institutionId;
+    }
 
     public String getFullName() {
         return fullName;

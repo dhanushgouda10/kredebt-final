@@ -66,6 +66,10 @@ public class AuditLog {
     @Column(name = "department")
     private String department;
 
+    // Owning institution, so each institution can only read its own audit trail.
+    @Column(name = "institution_id")
+    private Long institutionId;
+
     @Column(columnDefinition = "text")
     private String metadata;
 
@@ -150,6 +154,14 @@ public class AuditLog {
 
     public void setStudentUsn(String studentUsn) {
         this.studentUsn = studentUsn;
+    }
+
+    public Long getInstitutionId() {
+        return institutionId;
+    }
+
+    public void setInstitutionId(Long institutionId) {
+        this.institutionId = institutionId;
     }
 
     public String getDepartment() {

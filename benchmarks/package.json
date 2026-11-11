@@ -1,0 +1,19 @@
+{
+  "name": "kredent-benchmarks",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Local-only benchmark scripts for Kredent. Never part of the deployed app.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "mock-storage": "node mock-storage/server.mjs",
+    "seed": "node verification/seed.mjs",
+    "verify:bench": "node verification/run.mjs",
+    "stamping:summarize": "node stamping-hashing/summarize.mjs"
+  },
+  "dependencies": {
+    "ethers": "6.17.0"
+  }
+}

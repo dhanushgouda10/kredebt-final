@@ -67,14 +67,29 @@ export async function requestAdminNonce(walletAddress) {
  * claimed one AND that address is a registered admin. Knowing a public address
  * is therefore no longer sufficient to log in.
  *
- * The signature is sent once and never persisted client-side.
+ * The signature is sent once and never persisted client-side. `institutionId` is the institutional
+ * ID (Demo AICTE PID) the administrator is signing in for.
  */
-export async function loginAdminWithSignature(walletAddress, signature) {
+export async function loginAdminWithSignature(walletAddress, signature, institutionId) {
   const res = await fetch(`${API_BASE}/api/auth/admin/wallet-login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ walletAddress, signature }),
+    // institutionId says WHICH institution's dashboard to open — several institutions may share
+    // one wallet, so the wallet alone is ambiguous. The backend re-validates the institution's
+    // registry status on every sign-in.
+    body: JSON.stringify({ walletAddress, signature, institutionId }),
   })
+  if (!res.ok) {
+    throw new Error(await parseErrorMessage(res))
+  }
+  return res.json()
+}
+
+// GET /api/auth/institution/list — public. The colleges approved in the institutional registry, flagged
+// with `joinedKredent` (true once the college administrator has completed verification). Students can
+// only register at, and sign in to, a college that has joined.
+export async function listColleges(search = '') {
+  const res = await fetch(`${API_BASE}/api/auth/institution/list${search ? `?search=${encodeURIComponent(search)}` : ''}`)
   if (!res.ok) {
     throw new Error(await parseErrorMessage(res))
   }

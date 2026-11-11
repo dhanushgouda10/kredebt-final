@@ -95,6 +95,25 @@
             <artifactId>javase</artifactId>
             <version>3.5.3</version>
         </dependency>
+        <!-- Gmail SMTP OTP delivery (JavaMailSender). Credentials come from the environment only. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+        <!-- SQLite: used ONLY by the simulated institutional registry (package registry). The main
+             Kredent data stays on PostgreSQL. Accessed through plain JDBC, never through JPA. -->
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.45.3.0</version>
+        </dependency>
+        <!-- In-memory database for the end-to-end workflow test (src/test/.../e2e). Test scope only. -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.4.240</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

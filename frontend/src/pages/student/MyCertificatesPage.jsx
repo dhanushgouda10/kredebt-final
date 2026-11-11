@@ -48,7 +48,7 @@ export function MyCertificatesPage() {
         <PageHeader
           eyebrow="Student portal"
           title="My certificates"
-          subtitle="Certificates issued to you by MVJ College of Engineering."
+          subtitle="Certificates issued to you by your institution."
         />
 
         {loadError && (
@@ -82,26 +82,26 @@ export function MyCertificatesPage() {
                   <Card className="p-6">
                     <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0">
-                        <h2 className="font-serif text-body-l font-bold text-kredent-navy">{cert.degreeName}</h2>
+                        <h2 className="font-serif text-body-l font-bold text-brand-primary">{cert.degreeName}</h2>
 
-                        <p className="mt-1 font-mono text-micro text-mvj-muted/75">{cert.certificateNumber}</p>
+                        <p className="mt-1 font-mono text-micro text-brand-muted/75">{cert.certificateNumber}</p>
 
                         <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2 text-caption">
                           <div className="flex gap-2">
-                            <dt className="text-mvj-muted/75">Department</dt>
-                            <dd className="font-medium text-mvj-ink">{cert.department}</dd>
+                            <dt className="text-brand-muted/75">Department</dt>
+                            <dd className="font-medium text-brand-ink">{cert.department}</dd>
                           </div>
                           <div className="flex gap-2">
-                            <dt className="text-mvj-muted/75">Year</dt>
-                            <dd className="font-medium text-mvj-ink">{cert.yearOfCompletion}</dd>
+                            <dt className="text-brand-muted/75">Year</dt>
+                            <dd className="font-medium text-brand-ink">{cert.yearOfCompletion}</dd>
                           </div>
                           <div className="flex gap-2">
-                            <dt className="text-mvj-muted/75">Issued</dt>
-                            <dd className="font-medium text-mvj-ink">{cert.issuedAt?.slice(0, 10) ?? '—'}</dd>
+                            <dt className="text-brand-muted/75">Issued</dt>
+                            <dd className="font-medium text-brand-ink">{cert.issuedAt?.slice(0, 10) ?? '—'}</dd>
                           </div>
                         </dl>
 
-                        {meta.plain && <p className="mt-4 text-caption text-mvj-muted">{meta.plain}</p>}
+                        {meta.plain && <p className="mt-4 text-caption text-brand-muted">{meta.plain}</p>}
                       </div>
 
                       <div className="flex flex-shrink-0 flex-wrap items-center gap-3">
@@ -117,7 +117,7 @@ export function MyCertificatesPage() {
                         )}
                         <Link
                           to={`/student/certificates/${cert.id}`}
-                          className="text-caption font-semibold text-kredent-accent hover:underline"
+                          className="text-caption font-semibold text-brand-accent hover:underline"
                         >
                           View details
                         </Link>

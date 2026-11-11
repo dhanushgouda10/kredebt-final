@@ -12,7 +12,7 @@ export function Breadcrumbs({ items = [], className = '' }) {
 
   return (
     <nav aria-label="Breadcrumb" className={`mb-4 ${className}`}>
-      <ol className="flex flex-wrap items-center gap-1.5 text-caption text-mvj-muted/75">
+      <ol className="flex flex-wrap items-center gap-1.5 text-caption text-brand-muted/75">
         {items.map((item, idx) => {
           const isLast = idx === items.length - 1
           return (
@@ -23,11 +23,11 @@ export function Breadcrumbs({ items = [], className = '' }) {
                 </svg>
               )}
               {isLast || !item.to ? (
-                <span aria-current={isLast ? 'page' : undefined} className="font-medium text-mvj-muted">
+                <span aria-current={isLast ? 'page' : undefined} className="font-medium text-brand-muted">
                   {item.label}
                 </span>
               ) : (
-                <Link to={item.to} className="transition hover:text-kredent-accent">
+                <Link to={item.to} className="transition hover:text-brand-accent">
                   {item.label}
                 </Link>
               )}

@@ -17,7 +17,8 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
     // key) — not full-text over metadata, which stays a display-only field.
     @Query("""
             SELECT a FROM AuditLog a
-            WHERE (:action IS NULL OR a.action = :action)
+            WHERE a.institutionId = :institutionId
+              AND (:action IS NULL OR a.action = :action)
               AND (:department IS NULL OR a.department = :department)
               AND (:query = '' OR
                    LOWER(a.action) LIKE LOWER(CONCAT('%', :query, '%'))
@@ -25,8 +26,13 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
                 OR LOWER(COALESCE(a.studentUsn, '')) LIKE LOWER(CONCAT('%', :query, '%')))
             """)
     Page<AuditLog> searchFiltered(
+            @Param("institutionId") Long institutionId,
             @Param("action") String action,
             @Param("department") String department,
             @Param("query") String query,
             Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE AuditLog a SET a.institutionId = :institutionId WHERE a.institutionId IS NULL")
+    int adoptOrphans(@Param("institutionId") Long institutionId);
 }

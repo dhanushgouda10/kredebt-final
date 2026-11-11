@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { MainLayout } from './components/layout/MainLayout'
+import { RegistryLayout } from './components/layout/RegistryLayout'
 import { AdminLayout } from './components/layout/AdminLayout'
 import { StudentLayout } from './components/layout/StudentLayout'
 import { ProtectedRoute } from './components/layout/ProtectedRoute'
@@ -11,6 +12,13 @@ import { LoginSignupPage } from './pages/LoginSignupPage'
 import { AdminLoginPage } from './pages/AdminLoginPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { SkeletonLines } from './components/ui'
+
+const lazyRegistry = (name) =>
+  lazy(() => import(`./pages/registry/${name}.jsx`).then((m) => ({ default: m[name] })))
+const RegistryHomePage = lazyRegistry('RegistryHomePage')
+const RegistryRegisterPage = lazyRegistry('RegistryRegisterPage')
+const RegistryVerifyEmailPage = lazyRegistry('RegistryVerifyEmailPage')
+const RegistryAdminPage = lazyRegistry('RegistryAdminPage')
 
 const AdminStudentsPage = lazy(() =>
   import('./pages/AdminStudentsPage').then((m) => ({ default: m.AdminStudentsPage })),
@@ -57,6 +65,26 @@ function App() {
         <Route path="/login" element={<LoginSignupPage />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="*" element={<NotFoundPage />} />
+      </Route>
+      <Route path="/registry" element={<RegistryLayout />}>
+        {[
+          [undefined, RegistryHomePage],
+          ['register', RegistryRegisterPage],
+          ['verify-email', RegistryVerifyEmailPage],
+          ['admin', RegistryAdminPage],
+          ['admin/login', RegistryAdminPage],
+        ].map(([path, Page]) => (
+          <Route
+            key={path ?? 'index'}
+            index={path === undefined}
+            path={path}
+            element={
+              <Suspense fallback={<PortalFallback />}>
+                <Page />
+              </Suspense>
+            }
+          />
+        ))}
       </Route>
       <Route
         path="/admin"

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { listPublicDepartments, loginStudent, registerStudent } from '../services/authService'
+import { listColleges, listPublicDepartments, loginStudent, registerStudent } from '../services/authService'
 import { useAuth } from '../context/useAuth'
 import { Alert, Button, Input, PasswordInput, Select } from '../components/ui'
-import { normalizeEmail, validateCollegeEmail } from '../utils/collegeEmail'
+import { normalizeEmail, validateEmail } from '../utils/email'
+import { KredentMark } from '../components/brand/KredentLogo'
+import { CollegeSelect } from '../components/student/CollegeSelect'
 
 export function LoginSignupPage() {
   const [activeTab, setActiveTab] = useState('register')
@@ -11,7 +13,12 @@ export function LoginSignupPage() {
   const [formError, setFormError] = useState(null)
   const [departments, setDepartments] = useState([])
   const [departmentsError, setDepartmentsError] = useState('')
+  const [colleges, setColleges] = useState([])
+  const [collegesLoading, setCollegesLoading] = useState(true)
+  const [collegesError, setCollegesError] = useState('')
+  const [notice, setNotice] = useState('')
   const [formData, setFormData] = useState({
+    institutionId: '',
     name: '',
     usn: '',
     email: '',
@@ -38,6 +45,23 @@ export function LoginSignupPage() {
     }
   }, [])
 
+  useEffect(() => {
+    let cancelled = false
+    listColleges()
+      .then((list) => {
+        if (!cancelled) setColleges(list)
+      })
+      .catch((err) => {
+        if (!cancelled) setCollegesError(err.message || 'Could not load the list of colleges')
+      })
+      .finally(() => {
+        if (!cancelled) setCollegesLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
     setFormError(null)
@@ -50,12 +74,16 @@ export function LoginSignupPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setFormError(null)
+    setNotice('')
+
+    if (!formData.institutionId) {
+      setFormError('Please select your college.')
+      return
+    }
 
     if (activeTab === 'register') {
-      // Same institutional email rule the admin create form applies, so a student
-      // cannot self-register with a personal address and bypass it. The backend
-      // enforces it independently on RegisterRequest.
-      const emailError = validateCollegeEmail(formData.email)
+      // Same email check the admin create form applies; the backend validates it independently.
+      const emailError = validateEmail(formData.email)
       if (emailError) {
         setFormError(emailError)
         return
@@ -68,6 +96,7 @@ export function LoginSignupPage() {
       setSubmitting(true)
       try {
         await registerStudent({
+          institutionId: formData.institutionId,
           fullName: formData.name.trim(),
           usn: formData.usn.trim(),
           email: normalizeEmail(formData.email),
@@ -77,6 +106,7 @@ export function LoginSignupPage() {
         })
         setActiveTab('login')
         setFormError(null)
+        setNotice('Account created. Sign in with your email and password.')
         setFormData((prev) => ({
           ...prev,
           password: '',
@@ -93,7 +123,8 @@ export function LoginSignupPage() {
     setSubmitting(true)
     try {
       const authResponse = await loginStudent({
-        email: formData.email.trim(),
+        institutionId: formData.institutionId,
+        email: normalizeEmail(formData.email),
         password: formData.password,
       })
       login(authResponse)
@@ -106,14 +137,26 @@ export function LoginSignupPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-surface-page px-4 py-12 sm:py-16">
+    <div className="flex min-h-screen bg-surface-page">
+      <div className="relative hidden w-5/12 shrink-0 lg:block" aria-hidden="true">
+        <img
+          src="/images/campus-students.webp"
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover object-[50%_35%]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-primary/90 via-brand-primary/20 to-transparent" />
+        <p className="absolute inset-x-8 bottom-10 text-h2 font-semibold leading-tight text-white">
+          Your academic record, verified on blockchain.
+        </p>
+      </div>
+      <div className="flex flex-1 items-center justify-center px-4 py-12 sm:py-16">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <div className="mb-4 flex items-center justify-center gap-4">
-            <img src="/MVJCE_-_New_Logo.png" alt="" className="h-14 w-14 object-contain sm:h-16 sm:w-16" />
+            <KredentMark className="h-14 w-14 sm:h-16 sm:w-16" />
             <div className="text-left">
-              <h1 className="text-h2 font-bold text-mvj-navy">KREDENT</h1>
-              <p className="text-label mt-1 text-mvj-muted">Student Portal</p>
+              <h1 className="text-h2 font-bold text-brand-primary">KREDENT</h1>
+              <p className="text-label mt-1 text-brand-muted">Student Portal</p>
             </div>
           </div>
         </div>
@@ -127,7 +170,7 @@ export function LoginSignupPage() {
                 setActiveTab('register')
               }}
               className={`flex-1 py-4 text-center text-caption font-semibold transition-colors ${
-                activeTab === 'register' ? 'bg-mvj-orange text-white' : 'bg-surface-sunken text-mvj-muted hover:text-mvj-ink'
+                activeTab === 'register' ? 'bg-brand-accent text-white' : 'bg-surface-sunken text-brand-muted hover:text-brand-ink'
               }`}
             >
               Register
@@ -139,7 +182,7 @@ export function LoginSignupPage() {
                 setActiveTab('login')
               }}
               className={`flex-1 py-4 text-center text-caption font-semibold transition-colors ${
-                activeTab === 'login' ? 'bg-mvj-orange text-white' : 'bg-surface-sunken text-mvj-muted hover:text-mvj-ink'
+                activeTab === 'login' ? 'bg-brand-accent text-white' : 'bg-surface-sunken text-brand-muted hover:text-brand-ink'
               }`}
             >
               Login
@@ -150,6 +193,7 @@ export function LoginSignupPage() {
             <form onSubmit={handleSubmit} className="space-y-5">
               {activeTab === 'register' ? (
                 <>
+                  <CollegeSelect colleges={colleges} value={formData.institutionId} onChange={handleInputChange} loading={collegesLoading} error={collegesError} />
                   <Input label="Full name" name="name" value={formData.name} onChange={handleInputChange} required />
                   <Input label="USN" name="usn" value={formData.usn} onChange={handleInputChange} required />
                   <Input label="Email" name="email" type="email" value={formData.email} onChange={handleInputChange} required />
@@ -178,7 +222,7 @@ export function LoginSignupPage() {
                     onChange={handleInputChange}
                     required
                   />
-                  <label className="flex items-start gap-3 text-body text-mvj-muted">
+                  <label className="flex items-start gap-3 text-body text-brand-muted">
                     <input
                       type="checkbox"
                       name="agreeTerms"
@@ -187,16 +231,18 @@ export function LoginSignupPage() {
                       required
                       className="mt-1"
                     />
-                    I agree to the MVJCE terms of service
+                    I agree to the Kredent terms of service
                   </label>
                 </>
               ) : (
                 <>
+                  <CollegeSelect colleges={colleges} value={formData.institutionId} onChange={handleInputChange} loading={collegesLoading} error={collegesError} />
                   <Input label="Email" name="email" type="email" value={formData.email} onChange={handleInputChange} required />
                   <PasswordInput label="Password" name="password" value={formData.password} onChange={handleInputChange} required />
                 </>
               )}
 
+              {notice && <Alert variant="success">{notice}</Alert>}
               {formError && <Alert variant="error">{formError}</Alert>}
 
               <Button type="submit" variant="accent" size="lg" fullWidth loading={submitting}>
@@ -204,13 +250,14 @@ export function LoginSignupPage() {
               </Button>
             </form>
 
-            <p className="mt-6 text-center text-caption text-mvj-muted">
-              <Link to="/" className="font-semibold text-mvj-red underline underline-offset-2 hover:text-mvj-navy">
+            <p className="mt-6 text-center text-caption text-brand-muted">
+              <Link to="/" className="font-semibold text-brand-danger underline underline-offset-2 hover:text-brand-primary">
                 Back to home
               </Link>
             </p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   )

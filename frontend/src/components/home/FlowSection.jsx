@@ -4,7 +4,7 @@ const steps = [
   {
     title: 'Issue',
     description:
-      'Authorised college staff upload a signed degree certificate through the Kredent administration portal.',
+      'A verified institution’s authorised staff upload a signed degree certificate through the Kredent administration portal.',
   },
   {
     title: 'Secure',
@@ -28,20 +28,20 @@ export function FlowSection() {
     <section className="section-padding bg-surface-band">
       <div className="mx-auto max-w-[1200px] px-5 lg:px-10">
         <SectionHeading eyebrow="How it works" title="From Issuance" accent="to Verification" align="left">
-          Four steps from the day the college signs a certificate to the moment an employer confirms it.
+          Four steps from the day an institution signs a certificate to the moment an employer confirms it.
         </SectionHeading>
 
         <ol className="mt-16 max-w-3xl space-y-10 border-l-2 border-surface-line-strong pl-8">
           {steps.map((step, idx) => (
             <li key={step.title} className="relative">
               <span
-                className="absolute -left-[calc(2rem+5px)] top-0.5 text-label text-mvj-orange"
+                className="absolute -left-[calc(2rem+5px)] top-0.5 text-label text-brand-accent"
                 aria-hidden="true"
               >
                 {String(idx + 1).padStart(2, '0')}
               </span>
-              <h3 className="text-h3 font-bold text-mvj-navy">{step.title}</h3>
-              <p className="mt-3 text-body-l text-mvj-muted">{step.description}</p>
+              <h3 className="text-h3 font-bold text-brand-primary">{step.title}</h3>
+              <p className="mt-3 text-body-l text-brand-muted">{step.description}</p>
             </li>
           ))}
         </ol>

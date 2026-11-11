@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { Alert, Button, Card, CopyButton, SkeletonLines } from '../components/ui'
 import { verifyCertificate, verifyCertificatePdf } from '../services/verificationService'
 import { BLOCK_EXPLORER_URL } from '../contracts/skillChainConfig'
+import { KredentMark } from '../components/brand/KredentLogo'
 
 const ICONS = {
   check: (
@@ -75,9 +76,9 @@ function ProofRow({ label, value, mono = false }) {
   if (!value) return null
   return (
     <div className="flex flex-col gap-0.5 py-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
-      <dt className="flex-shrink-0 text-caption text-mvj-muted/75">{label}</dt>
+      <dt className="flex-shrink-0 text-caption text-brand-muted/75">{label}</dt>
       <dd className={`flex min-w-0 items-center gap-2 sm:justify-end ${mono ? 'sm:text-right' : ''}`}>
-        <span className={`min-w-0 ${mono ? 'break-all font-mono text-micro text-mvj-ink' : 'text-caption font-medium text-mvj-ink'}`}>
+        <span className={`min-w-0 ${mono ? 'break-all font-mono text-micro text-brand-ink' : 'text-caption font-medium text-brand-ink'}`}>
           {value}
         </span>
         {mono && <CopyButton value={String(value)} label={label} />}
@@ -141,7 +142,7 @@ export function VerifyResultPage() {
       {loading ? (
         <div className="bg-surface-sunken py-14" aria-busy="true">
           <div className="mx-auto max-w-3xl px-5 lg:px-10">
-            <p className="text-caption font-medium text-mvj-muted">Checking certificate {certificateNumber}…</p>
+            <p className="text-caption font-medium text-brand-muted">Checking certificate {certificateNumber}…</p>
           </div>
         </div>
       ) : error ? (
@@ -162,11 +163,15 @@ export function VerifyResultPage() {
 
       <div className="mx-auto max-w-3xl px-5 pt-8 lg:px-10">
         {/* Issuing authority — establishes who is making the above claim. */}
-        <p className="mb-8 flex items-center gap-2.5 text-micro text-mvj-muted/75">
-          <img src="/MVJCE_-_New_Logo.png" alt="" className="h-7 w-7 flex-shrink-0 object-contain" />
+        <p className="mb-8 flex items-center gap-2.5 text-micro text-brand-muted/75">
+          <KredentMark className="h-7 w-7" />
           <span>
-            Checked against the official credential records of{' '}
-            <span className="font-semibold text-mvj-muted">MVJ College of Engineering</span>
+            Checked against the on-chain credential record
+            {data?.institution ? (
+              <>
+                {' '}issued by <span className="font-semibold text-brand-muted">{data.institution}</span>
+              </>
+            ) : null}
           </span>
         </p>
 
@@ -179,7 +184,7 @@ export function VerifyResultPage() {
             {data.studentName && (
               <Card>
                 <div className="border-b border-surface-line px-6 py-4">
-                  <h2 className="text-body font-bold text-kredent-navy">Certificate details</h2>
+                  <h2 className="text-body font-bold text-brand-primary">Certificate details</h2>
                 </div>
                 <dl className="divide-y divide-surface-line px-6">
                   <ProofRow label="Certificate number" value={data.certificateNumber} mono />
@@ -198,12 +203,12 @@ export function VerifyResultPage() {
                 <details className="group">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-4">
                     <div className="min-w-0">
-                      <h2 className="text-body font-bold text-kredent-navy">Blockchain record</h2>
-                      <p className="mt-0.5 text-caption text-mvj-muted">
+                      <h2 className="text-body font-bold text-brand-primary">Blockchain record</h2>
+                      <p className="mt-0.5 text-caption text-brand-muted">
                         Permanently recorded and independently checkable.
                       </p>
                     </div>
-                    <span className="flex-shrink-0 text-caption font-semibold text-kredent-accent">
+                    <span className="flex-shrink-0 text-caption font-semibold text-brand-accent">
                       <span className="group-open:hidden">Show proof</span>
                       <span className="hidden group-open:inline">Hide</span>
                     </span>
@@ -223,7 +228,7 @@ export function VerifyResultPage() {
                         href={`${BLOCK_EXPLORER_URL}/tx/${data.transactionHash}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-5 inline-flex items-center gap-2 rounded-lg border border-kredent-navy px-4 py-2 text-caption font-semibold text-kredent-navy transition hover:bg-kredent-navy hover:text-white"
+                        className="mt-5 inline-flex items-center gap-2 rounded-lg border border-brand-primary px-4 py-2 text-caption font-semibold text-brand-primary transition hover:bg-brand-primary hover:text-white"
                       >
                         View on the public block explorer
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -241,12 +246,12 @@ export function VerifyResultPage() {
                 <details className="group">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-4">
                     <div className="min-w-0">
-                      <h2 className="text-body font-bold text-kredent-navy">Have a copy of the PDF?</h2>
-                      <p className="mt-0.5 text-caption text-mvj-muted">
+                      <h2 className="text-body font-bold text-brand-primary">Have a copy of the PDF?</h2>
+                      <p className="mt-0.5 text-caption text-brand-muted">
                         Check whether the file you were sent has been altered.
                       </p>
                     </div>
-                    <span className="flex-shrink-0 text-caption font-semibold text-kredent-accent">
+                    <span className="flex-shrink-0 text-caption font-semibold text-brand-accent">
                       <span className="group-open:hidden">Check file</span>
                       <span className="hidden group-open:inline">Hide</span>
                     </span>
@@ -263,7 +268,7 @@ export function VerifyResultPage() {
                         type="file"
                         accept="application/pdf"
                         onChange={onPdfChange}
-                        className="block w-full text-caption text-mvj-muted file:mr-4 file:rounded-lg file:border-0 file:bg-kredent-navy file:px-4 file:py-2 file:text-caption file:font-semibold file:text-white hover:file:bg-kredent-navy-dark"
+                        className="block w-full text-caption text-brand-muted file:mr-4 file:rounded-lg file:border-0 file:bg-brand-primary file:px-4 file:py-2 file:text-caption file:font-semibold file:text-white hover:file:bg-brand-primary-deep"
                       />
                       {pdfError && <Alert variant="error">{pdfError}</Alert>}
                       <Button type="submit" variant="primary" loading={pdfLoading} disabled={pdfLoading}>

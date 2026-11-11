@@ -36,7 +36,7 @@ public class AdminStudentController {
             @RequestParam(required = false) String department,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("fullName").ascending());
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100), Sort.by("fullName").ascending());
         // department is the Students page's primary filter — when set, this stays a fully
         // server-side, paginated department+search query (StudentService.listStudentsByDepartment)
         // rather than fetching a department's whole roster and filtering it in the browser.

@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { Label } from './Input'
 
 const BASE =
-  'w-full rounded-lg border bg-surface-raised px-4 py-3 pr-11 text-caption text-mvj-ink placeholder:text-mvj-muted/60 transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-mvj-muted'
+  'w-full rounded-lg border bg-surface-raised px-4 py-3 pr-11 text-caption text-brand-ink placeholder:text-brand-muted/60 transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-brand-muted'
 
 const STATE = {
-  default: 'border-surface-line-strong focus:border-mvj-navy focus:ring-mvj-navy/20',
+  default: 'border-surface-line-strong focus:border-brand-primary focus:ring-brand-primary/20',
   error: 'border-red-400 focus:border-red-500 focus:ring-red-500/25',
 }
 
@@ -39,7 +39,7 @@ export function PasswordInput({ label, id, required, error, className = '', cont
           aria-label={visible ? 'Hide password' : 'Show password'}
           aria-pressed={visible}
           tabIndex={0}
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-mvj-muted/75 transition hover:bg-surface-sunken hover:text-mvj-muted"
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-brand-muted/75 transition hover:bg-surface-sunken hover:text-brand-muted"
         >
           {visible ? (
             <svg className="h-4.5 w-4.5" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">

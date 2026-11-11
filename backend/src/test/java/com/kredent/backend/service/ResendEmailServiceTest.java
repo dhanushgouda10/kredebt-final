@@ -23,7 +23,7 @@ class ResendEmailServiceTest {
         s.setId(42L);
         s.setFullName("Asha Rao");
         s.setUsn("1MJ21CS001");
-        s.setEmail("asha.rao@mvjce.edu.in");
+        s.setEmail("asha.rao@example.edu");
         s.setDepartment("CSE");
         s.setPassword("$2a$10$hashed-password-value-should-never-be-emailed");
         s.setWalletAddress("0xaB07a51fd2daBCceF287f0D3FFbce0a6D3297C3B");
@@ -84,7 +84,7 @@ class ResendEmailServiceTest {
 
         assertThat(html).contains("Asha Rao");
         assertThat(html).contains("1MJ21CS001");
-        assertThat(html).contains("asha.rao@mvjce.edu.in");
+        assertThat(html).contains("asha.rao@example.edu");
         assertThat(html).contains("CSE");
         assertThat(html).contains("http://localhost:5173/login");
     }

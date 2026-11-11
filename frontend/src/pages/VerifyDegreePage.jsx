@@ -20,12 +20,12 @@ export function VerifyDegreePage() {
 
   return (
     <div className="min-h-screen bg-surface-page">
-      <div className="bg-mvj-navy section-padding !pb-12 !pt-14">
+      <div className="bg-brand-primary section-padding !pb-12 !pt-14">
         <div className="mx-auto max-w-2xl px-5 lg:px-10">
-          <p className="text-label text-mvj-orange">MVJ College of Engineering</p>
+          <p className="text-label text-brand-accent">Public verification</p>
           <h1 className="text-h2 mt-3 font-bold text-white">Verify a degree certificate</h1>
           <p className="text-body-l mt-4 text-white/80">
-            Confirm whether a certificate was issued by the college and whether it is still valid. The
+            Confirm whether a certificate was issued by an institution on Kredent and whether it is still valid. The
             platform reads the live blockchain record — not just the database.
           </p>
         </div>
@@ -51,7 +51,7 @@ export function VerifyDegreePage() {
           </Button>
         </form>
 
-        <p className="text-body mt-10 text-mvj-muted">
+        <p className="text-body mt-10 text-brand-muted">
           Every Kredent certificate carries a QR code. Scanning it with a phone camera opens this check
           automatically — you do not need to type the number.
         </p>

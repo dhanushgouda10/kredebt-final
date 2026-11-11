@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAuth } from '../../context/useAuth'
+import { KredentMark } from '../brand/KredentLogo'
 
 const links = [
   {
@@ -46,7 +47,7 @@ function SidebarNav({ onNavigate }) {
   return (
     <>
       <div className="mb-8 flex items-center gap-3 px-2">
-        <img src="/MVJCE_-_New_Logo.png" alt="Kredent logo" className="h-9 w-9 object-contain" />
+        <KredentMark className="h-9 w-9" />
         <div>
           <p className="heading-serif text-h3 leading-tight">Kredent</p>
           <p className="text-micro tracking-wide text-white/60">Student Portal</p>
@@ -61,7 +62,7 @@ function SidebarNav({ onNavigate }) {
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-lg px-4 py-3 text-caption font-semibold transition ${
                 isActive
-                  ? 'bg-kredent-accent text-white shadow-md'
+                  ? 'bg-brand-accent text-white shadow-md'
                   : 'text-white/80 hover:bg-white/10 hover:text-white'
               }`
             }
@@ -82,7 +83,7 @@ function SidebarNav({ onNavigate }) {
           </svg>
           Logout
         </button>
-        <div className="text-micro text-white/40">Kredent · MVJCE Blockchain System</div>
+        <div className="text-micro text-white/40">Kredent · Academic Credential Platform</div>
       </div>
     </>
   )
@@ -94,9 +95,9 @@ export function StudentSidebar() {
 
   return (
     <>
-      <div className="flex items-center justify-between bg-kredent-navy px-4 py-3 text-white md:hidden">
+      <div className="flex items-center justify-between bg-brand-primary px-4 py-3 text-white md:hidden">
         <div className="flex items-center gap-2.5">
-          <img src="/MVJCE_-_New_Logo.png" alt="Kredent logo" className="h-8 w-8 object-contain" />
+          <KredentMark className="h-8 w-8" />
           <p className="heading-serif text-body-l leading-tight">Kredent</p>
         </div>
         <button
@@ -112,7 +113,7 @@ export function StudentSidebar() {
         </button>
       </div>
 
-      <aside className="hidden min-h-full flex-col bg-kredent-navy px-4 py-6 text-white md:flex md:w-64 md:flex-shrink-0">
+      <aside className="hidden min-h-full flex-col bg-brand-primary px-4 py-6 text-white md:flex md:w-64 md:flex-shrink-0">
         <SidebarNav />
       </aside>
 
@@ -132,7 +133,7 @@ export function StudentSidebar() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 240 }}
-              className="fixed left-0 top-0 flex h-full w-72 max-w-[80vw] flex-col bg-kredent-navy px-4 py-6 text-white shadow-2xl"
+              className="fixed left-0 top-0 flex h-full w-72 max-w-[80vw] flex-col bg-brand-primary px-4 py-6 text-white shadow-2xl"
               role="dialog"
               aria-modal="true"
               aria-label="Student navigation"

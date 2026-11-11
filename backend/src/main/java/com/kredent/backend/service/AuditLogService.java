@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kredent.backend.dto.AuditLogResponse;
 import com.kredent.backend.dto.PageResponse;
+import com.kredent.backend.util.SecurityConstants;
 import com.kredent.backend.entity.ActorType;
 import com.kredent.backend.entity.AuditLog;
 import com.kredent.backend.entity.Certificate;
@@ -43,6 +44,7 @@ public class AuditLogService {
     private final CertificateRepository certificateRepository;
     private final StudentRepository studentRepository;
     private final AdminRepository adminRepository;
+    private final CurrentUserService currentUserService;
 
     public AuditLogService(
             AuditLogRepository auditLogRepository,
@@ -50,13 +52,15 @@ public class AuditLogService {
             HttpServletRequest request,
             CertificateRepository certificateRepository,
             StudentRepository studentRepository,
-            AdminRepository adminRepository) {
+            AdminRepository adminRepository,
+            CurrentUserService currentUserService) {
         this.auditLogRepository = auditLogRepository;
         this.objectMapper = objectMapper;
         this.request = request;
         this.certificateRepository = certificateRepository;
         this.studentRepository = studentRepository;
         this.adminRepository = adminRepository;
+        this.currentUserService = currentUserService;
     }
 
     public void record(ActorType actorType, Long actorId, String action, String entityType, String entityId, Map<String, Object> metadata) {
@@ -76,6 +80,7 @@ public class AuditLogService {
         // resolve for some reason — an audit record with a missing denormalized field is still a
         // valid, complete audit record; only its searchability by that field is reduced.
         populateDenormalizedFields(entry, entityType, entityId, metadata);
+        entry.setInstitutionId(resolveInstitutionId(actorType, actorId, entityType, entityId));
 
         auditLogRepository.save(entry);
     }
@@ -116,23 +121,52 @@ public class AuditLogService {
      * Certificate.student, a lazy association; that needs an open Hibernate session for the whole
      * page mapping, not just the initial query.
      */
-    @Transactional(readOnly = true)
-    public PageResponse<AuditLogResponse> listAll(Pageable pageable) {
-        Page<AuditLog> page = auditLogRepository.findAll(pageable);
-        return PageResponse.from(page, this::toResponse);
+    /**
+     * The institution an audit entry belongs to. Administrator actions carry it on the request (set
+     * from the verified JWT); student actions and system writes fall back to the institution of the
+     * student / certificate the entry is about. Null only when nothing can be resolved.
+     */
+    private Long resolveInstitutionId(ActorType actorType, Long actorId, String entityType, String entityId) {
+        try {
+            Object attr = request.getAttribute(SecurityConstants.INSTITUTION_ID_ATTRIBUTE);
+            if (attr instanceof Long id) {
+                return id;
+            }
+        } catch (IllegalStateException ignored) {
+            // no current request (e.g. a scheduled job) — fall through to entity-based lookup
+        }
+        try {
+            if (actorType == ActorType.STUDENT && actorId != null) {
+                Long id = studentRepository.findById(actorId)
+                        .map(s -> s.getInstitution() == null ? null : s.getInstitution().getId()).orElse(null);
+                if (id != null) {
+                    return id;
+                }
+            }
+            if ("INSTITUTION".equals(entityType) && entityId != null) {
+                return Long.valueOf(entityId);
+            }
+            if ("CERTIFICATE".equals(entityType) && entityId != null) {
+                return certificateRepository.findById(UUID.fromString(entityId))
+                        .map(c -> c.getInstitution() == null ? null : c.getInstitution().getId()).orElse(null);
+            }
+            if ("STUDENT".equals(entityType) && entityId != null) {
+                return studentRepository.findById(Long.valueOf(entityId))
+                        .map(s -> s.getInstitution() == null ? null : s.getInstitution().getId()).orElse(null);
+            }
+        } catch (RuntimeException ignored) {
+            // an unresolvable entity must never fail the audit write itself
+        }
+        return null;
     }
 
-    /**
-     * Filtered/searched view — action, department, and free-text search are each optional (null
-     * or blank means "any"). Filtering happens in SQL against AuditLog's own denormalized columns
-     * (AuditLogRepository.searchFiltered), so this scales to thousands of rows the same way the
-     * plain listAll() above does: one indexed query, one page of results, never a full table scan
-     * into the browser.
-     */
+    /** The signed-in administrator's own institution's audit trail — never another institution's. */
     @Transactional(readOnly = true)
     public PageResponse<AuditLogResponse> listFiltered(String action, String department, String search, Pageable pageable) {
+        Long institutionId = currentUserService.getCurrentInstitution().getId();
         String query = search == null ? "" : search.trim();
         Page<AuditLog> page = auditLogRepository.searchFiltered(
+                institutionId,
                 (action == null || action.isBlank()) ? null : action,
                 (department == null || department.isBlank()) ? null : department,
                 query,

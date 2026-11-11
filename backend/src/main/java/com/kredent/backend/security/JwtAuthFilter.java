@@ -42,6 +42,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 var authorities = List.of(new SimpleGrantedAuthority(SecurityConstants.ROLE_PREFIX + role));
                 var authToken = new UsernamePasswordAuthenticationToken(subject, null, authorities);
                 authToken.setDetails(request.getRemoteAddr());
+
+                Long institutionId = jwtService.extractInstitutionId(token);
+                if (institutionId != null) {
+                    request.setAttribute(SecurityConstants.INSTITUTION_ID_ATTRIBUTE, institutionId);
+                }
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }

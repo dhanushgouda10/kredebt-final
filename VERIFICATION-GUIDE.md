@@ -98,7 +98,7 @@ construction — read the failures carefully, they are meaningful.
 
 | Test class | What a failure means |
 |---|---|
-| `MvjceEmailValidatorTest` | Domain restriction is wrong — Gmail may be accepted |
+| `OtpUtilTest` / `InstitutionVerificationServiceTest` | OTP hashing or verification rules are wrong |
 | `AdminNonceServiceTest` | Nonces may be reusable → signature replay possible |
 | `WalletSignatureVerifierTest` | **Crypto is wrong. Stop and fix before anything else.** |
 | `AdminAuthServiceTest` | The auth bypass is not actually closed |
@@ -171,7 +171,7 @@ This is the vulnerability that was closed. Prove it four ways.
 ```bash
 curl "http://localhost:8081/api/auth/admin/nonce?address=0xYOUR_ADMIN_ADDRESS"
 ```
-Expect `{"nonce":"Sign in to Kredent as an MVJ College of Engineering administrator...."}`
+Expect `{"nonce":"Sign in to Kredent as an institution administrator...."}`
 
 - [ ] Returns a nonce containing the word "Nonce:"
 
@@ -228,36 +228,31 @@ Log in, log out, log in again. The second login must request a **new** nonce
 
 ---
 
-## Stage 6 — Email + domain restriction (10 min)
+## Stage 6 — Email handling (5 min)
 
-### 6.1 Domain rule — frontend
+The institutional email-domain restriction was removed; any syntactically valid email is accepted.
 
-Admin → Students → Add Student. Enter `test@gmail.com`.
-Expect: *"Please use your official MVJCE email address ending with @mvjce.edu.in."*
-Nothing is submitted.
+### 6.1 Validation
 
-- [ ] Gmail blocked in admin form
-- [ ] Same on public signup (`/login` → Register tab)
+Admin → Students → Add Student with `not-an-email`. Expect an inline error and no request.
 
-### 6.2 Domain rule — backend (the real enforcement)
+- [ ] Invalid email blocked in admin form and on public signup
 
-Bypass the UI entirely:
+### 6.2 Backend enforcement
 
 ```bash
 curl -i -X POST http://localhost:8081/api/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"fullName":"Test","usn":"TEST001","email":"test@gmail.com","phone":"9999999999","department":"CSE","password":"Test@1234"}'
+  -d '{"fullName":"Test","usn":"TEST001","email":"not-an-email","phone":"9999999999","department":"CSE","password":"Test@1234"}'
 ```
 
-**Expect `400`.** If this returns 201, the backend rule is not applied and the
-frontend check is decorative.
+**Expect `400`.**
 
-- [ ] Returns 400 ← **proves it is a real rule, not just UI**
+- [ ] Returns 400
 
 ### 6.3 Case-insensitivity
 
-Register with `STUDENT@MVJCE.EDU.IN`. Should succeed, and the stored email should
-be lowercase — check the Students table in the admin portal.
+Register with `Student@Example.EDU`. The stored email should be lowercase.
 
 - [ ] Accepted · [ ] Stored lowercase
 
